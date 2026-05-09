@@ -92,11 +92,11 @@
         class="agreement-box ss-flex ss-flex-col ss-col-center"
         :class="{ shake: currentProtocol }"
       >
-        <view class="agreement-title ss-m-b-20">请选择是否同意以下协议(请联网查看)：</view>
+        <view class="agreement-title">请选择是否同意以下协议(请联网查看)：</view>
         
         <view class="agreement-options-container">
           <!-- 同意选项 -->
-          <view class="agreement-option ss-m-b-20">
+          <view class="agreement-option">
             <view class="radio ss-flex ss-col-center" @tap="onAgree">
               <radio
                 :checked="state.protocol === true"
@@ -285,7 +285,7 @@
   }
 
   .tcp-text {
-    color: var(--ui-BG-Main);
+    color: #999999;
   }
 
   .agreement-text {
@@ -293,21 +293,33 @@
   }
   
   .agreement-title {
-    font-size: 28rpx;
-    color: $dark-9;
+    font-size: 30rpx;
+    line-height: 42rpx;
+    color: #999999;
     text-align: left;
     width: 100%;
-    padding-left: 60rpx;
+    padding-left: 50rpx;
   }
   
   .agreement-options-container {
     width: 100%;
-    padding-left: 100rpx;
+    padding-left: 84rpx;
+    margin-top: 20rpx;
   }
   
   .agreement-option {
     width: 100%;
     display: flex;
     justify-content: flex-start;
+    margin-bottom: 22rpx;
+    .radio {
+      align-items: flex-start;
+    }
+    .agreement-text {
+      flex-wrap: wrap;
+      font-size: 28rpx;
+      line-height: 40rpx;
+      color: #999999;
+    }
   }
 </style>

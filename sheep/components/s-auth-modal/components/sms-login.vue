@@ -2,10 +2,10 @@
 <template>
   <view>
     <!-- 标题栏 -->
-    <view class="head-box ss-m-b-60">
+    <view class="head-box auth-head">
       <view class="ss-flex ss-m-b-20">
         <view class="head-title head-title-line head-title-animation">短信登录</view>
-        <view class="head-title-active ss-m-r-40" @tap="showAuthModal('accountLogin')">
+        <view class="head-title-active" @tap="showAuthModal('accountLogin')">
           账号登录
         </view>
       </view>
@@ -18,8 +18,9 @@
       v-model="state.model"
       :rules="state.rules"
       validateTrigger="bind"
-      labelWidth="140"
-      labelAlign="center"
+      labelWidth="100"
+      labelAlign="left"
+      class="auth-form"
     >
       <uni-forms-item name="mobile" label="手机号">
         <uni-easyinput
@@ -48,13 +49,11 @@
           :inputBorder="false"
           type="number"
           maxlength="4"
-        >
-          <template v-slot:right>
-            <button class="ss-reset-button login-btn-start" @tap="smsLoginSubmit"> 登录 </button>
-          </template>
-        </uni-easyinput>
+        />
       </uni-forms-item>
     </uni-forms>
+
+    <button class="ss-reset-button auth-submit-btn" @tap="smsLoginSubmit">登录</button>
   </view>
 </template>
 
