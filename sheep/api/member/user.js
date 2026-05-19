@@ -21,7 +21,20 @@ const UserApi = {
       custom: {
         auth: true,
         showSuccess: true,
-        successMsg: '更新成功'
+        successMsg: '更新成功',
+      },
+    });
+  },
+  // 静默修改基本信息
+  updateUserSilent: (data) => {
+    return request({
+      url: '/member/user/update',
+      method: 'PUT',
+      data,
+      custom: {
+        auth: true,
+        showLoading: false,
+        showSuccess: false,
       },
     });
   },
@@ -34,7 +47,7 @@ const UserApi = {
       custom: {
         loadingMsg: '验证中',
         showSuccess: true,
-        successMsg: '修改成功'
+        successMsg: '修改成功',
       },
     });
   },
@@ -44,12 +57,12 @@ const UserApi = {
       url: '/member/user/update-mobile-by-weixin',
       method: 'PUT',
       data: {
-        code
+        code,
       },
       custom: {
         showSuccess: true,
         loadingMsg: '获取中',
-        successMsg: '修改成功'
+        successMsg: '修改成功',
       },
     });
   },
@@ -62,7 +75,7 @@ const UserApi = {
       custom: {
         loadingMsg: '验证中',
         showSuccess: true,
-        successMsg: '修改成功'
+        successMsg: '修改成功',
       },
     });
   },
@@ -75,11 +88,10 @@ const UserApi = {
       custom: {
         loadingMsg: '验证中',
         showSuccess: true,
-        successMsg: '修改成功'
-      }
+        successMsg: '修改成功',
+      },
     });
   },
-
 };
 
 export default UserApi;

@@ -36,6 +36,12 @@ const defaultTabbar = {
       activeIconUrl: '',
     },
     {
+      text: '消息',
+      url: '/pages/index/message',
+      iconUrl: '',
+      activeIconUrl: '',
+    },
+    {
       text: '我的',
       url: '/pages/index/user',
       iconUrl: '',

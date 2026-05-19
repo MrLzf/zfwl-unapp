@@ -11,6 +11,17 @@ const TutorProfileApi = {
       },
     });
   },
+  getProfileSilent: () => {
+    return request({
+      url: '/tutor/profile/get',
+      method: 'GET',
+      custom: {
+        auth: true,
+        showLoading: false,
+        showError: false,
+      },
+    });
+  },
   initProfile: (data) => {
     return request({
       url: '/tutor/profile/init',

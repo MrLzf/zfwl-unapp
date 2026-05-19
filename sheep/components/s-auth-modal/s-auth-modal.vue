@@ -1,6 +1,12 @@
 <template>
   <!-- 规格弹窗 -->
-  <su-popup :show="authType !== ''" round="10" :showClose="true" @close="closeAuthModal">
+  <su-popup
+    :show="authType !== ''"
+    round="24"
+    :showClose="false"
+    maskBackgroundColor="rgba(15, 23, 42, 0.46)"
+    @close="closeAuthModal"
+  >
     <view class="login-wrap">
       <!-- 1. 账号密码登录 accountLogin -->
       <account-login

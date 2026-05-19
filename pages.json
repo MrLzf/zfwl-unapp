@@ -45,6 +45,17 @@
       }
     },
     {
+      "path": "pages/index/message",
+      "style": {
+        "navigationBarTitleText": "消息"
+      },
+      "meta": {
+        "auth": true,
+        "title": "消息",
+        "group": "家教"
+      }
+    },
+    {
       "path": "pages/index/user",
       "style": {
         "navigationBarTitleText": "我的",
@@ -202,6 +213,9 @@
       },
       {
         "pagePath": "pages/index/publish"
+      },
+      {
+        "pagePath": "pages/index/message"
       },
       {
         "pagePath": "pages/index/user"

@@ -66,6 +66,8 @@
 <script setup>
   import { computed, reactive } from 'vue';
   import { onShow } from '@dcloudio/uni-app';
+  import sheep from '@/sheep';
+  import { showAuthModal } from '@/sheep/hooks/useModal';
 
   const modes = [
     { label: '上门', value: 'offline' },
@@ -106,6 +108,9 @@
   }
 
   onShow(() => {
+    if (!sheep.$store('user').isLogin) {
+      showAuthModal();
+    }
     const role = uni.getStorageSync('tutor_publish_role');
     if (role === 'teacher') {
       form.type = 'tutor';
