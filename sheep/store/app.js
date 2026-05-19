@@ -11,7 +11,7 @@ const defaultTabbar = {
   mode: 1,
   style: {
     color: '#6b7280',
-    activeColor: '#2563eb',
+    activeColor: '#0f766e',
     bgType: 'color',
     bgColor: '#ffffff',
   },
@@ -20,6 +20,18 @@ const defaultTabbar = {
     {
       text: '首页',
       url: '/pages/index/index',
+      iconUrl: '',
+      activeIconUrl: '',
+    },
+    {
+      text: '广场',
+      url: '/pages/index/square',
+      iconUrl: '',
+      activeIconUrl: '',
+    },
+    {
+      text: '发布',
+      url: '/pages/index/publish',
       iconUrl: '',
       activeIconUrl: '',
     },
@@ -62,7 +74,7 @@ const app = defineStore({
       basic: {
         tabbar: defaultTabbar,
         theme: {
-          main: '#2563eb',
+          main: '#0f766e',
         },
       },
       home: {

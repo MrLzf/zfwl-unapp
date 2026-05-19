@@ -1,5 +1,10 @@
 <template>
-  <s-layout title="我的" navbar="normal" tabbar="/pages/index/user" class="user-page">
+  <s-layout title="" navbar="" tabbar="/pages/index/user" class="user-page">
+    <view class="user-hero">
+      <view class="page-title">我的</view>
+      <view class="page-subtitle">管理身份、发布、联系记录和积分</view>
+    </view>
+
     <view class="profile-card ss-flex ss-row-between ss-col-center">
       <view class="ss-flex ss-col-center">
         <image
@@ -12,7 +17,7 @@
           <view class="mobile">{{ userInfo.mobile || '登录后管理家教档案' }}</view>
         </view>
       </view>
-      <button v-if="!isLogin" class="login-btn ss-reset-button" @tap="showAuth">登录</button>
+      <button v-if="!isLogin" class="login-btn ss-reset-button" @tap="showAuth">立即登录</button>
     </view>
 
     <view class="summary-grid">
@@ -43,6 +48,17 @@
         @tap="go('/pages/tutor/city/index')"
       >
         <text>选择城市</text>
+        <text class="cicon-forward"></text>
+      </view>
+      <view
+        class="menu-item ss-flex ss-row-between ss-col-center"
+        @tap="go('/pages/index/publish')"
+      >
+        <text>我的发布</text>
+        <text class="cicon-forward"></text>
+      </view>
+      <view class="menu-item ss-flex ss-row-between ss-col-center" @tap="go('/pages/index/square')">
+        <text>浏览广场</text>
         <text class="cicon-forward"></text>
       </view>
       <view
@@ -125,15 +141,31 @@
 <style lang="scss" scoped>
   .user-page {
     min-height: 100vh;
-    background: #f6f7fb;
+    background: #f5f7f5;
+  }
+
+  .user-hero {
+    padding: calc(var(--status-bar-height) + 28rpx) 24rpx 10rpx;
+  }
+
+  .page-title {
+    color: #111827;
+    font-size: 42rpx;
+    font-weight: 800;
+  }
+
+  .page-subtitle {
+    margin-top: 10rpx;
+    color: #64748b;
+    font-size: 25rpx;
   }
 
   .profile-card {
-    margin: 24rpx;
+    margin: 18rpx 24rpx 24rpx;
     padding: 28rpx;
     border-radius: 12rpx;
     background: #ffffff;
-    border: 1px solid #edf0f5;
+    border: 1px solid #e8eef0;
   }
 
   .avatar {
@@ -164,7 +196,7 @@
     padding: 0 24rpx;
     border-radius: 32rpx;
     color: #ffffff;
-    background: #2563eb;
+    background: #0f766e;
     font-size: 26rpx;
   }
 
@@ -180,7 +212,7 @@
     border-radius: 12rpx;
     text-align: center;
     background: #ffffff;
-    border: 1px solid #edf0f5;
+    border: 1px solid #e8eef0;
   }
 
   .summary-value {
@@ -199,7 +231,7 @@
     margin: 0 24rpx;
     border-radius: 12rpx;
     background: #ffffff;
-    border: 1px solid #edf0f5;
+    border: 1px solid #e8eef0;
   }
 
   .menu-item {

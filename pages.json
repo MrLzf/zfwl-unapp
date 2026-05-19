@@ -21,6 +21,30 @@
       }
     },
     {
+      "path": "pages/index/square",
+      "style": {
+        "navigationBarTitleText": "家教广场",
+        "enablePullDownRefresh": true
+      },
+      "meta": {
+        "auth": false,
+        "title": "家教广场",
+        "group": "家教"
+      }
+    },
+    {
+      "path": "pages/index/publish",
+      "style": {
+        "navigationBarTitleText": "发布",
+        "enablePullDownRefresh": true
+      },
+      "meta": {
+        "auth": true,
+        "title": "发布",
+        "group": "家教"
+      }
+    },
+    {
       "path": "pages/index/user",
       "style": {
         "navigationBarTitleText": "我的",
@@ -62,6 +86,17 @@
           "meta": {
             "auth": true,
             "title": "家教身份",
+            "group": "家教"
+          }
+        },
+        {
+          "path": "detail/index",
+          "style": {
+            "navigationBarTitleText": "需求详情"
+          },
+          "meta": {
+            "auth": false,
+            "title": "需求详情",
             "group": "家教"
           }
         }
@@ -161,6 +196,12 @@
     "list": [
       {
         "pagePath": "pages/index/index"
+      },
+      {
+        "pagePath": "pages/index/square"
+      },
+      {
+        "pagePath": "pages/index/publish"
       },
       {
         "pagePath": "pages/index/user"
