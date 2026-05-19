@@ -1,17 +1,17 @@
 {
-  "id": "shopro",
-  "name": "shopro",
-  "displayName": "芋道商城",
+  "id": "tutor",
+  "name": "tutor",
+  "displayName": "家教",
   "version": "2026.03",
-  "description": "芋道商城，一套代码，同时发行到iOS、Android、H5、微信小程序多个平台，请使用手机扫码快速体验强大功能",
+  "description": "家教信息服务应用，一套代码，同时发行到 iOS、Android、H5、微信小程序多个平台",
   "scripts": {
     "prettier": "prettier --write  \"{pages,sheep}/**/*.{js,json,tsx,css,less,scss,vue,html,md}\""
   },
   "repository": "https://github.com/sheepjs/shop.git",
   "keywords": [
-    "商城",
-    "B2C",
-    "商城模板"
+    "家教",
+    "教育",
+    "本地服务"
   ],
   "author": "",
   "license": "MIT",

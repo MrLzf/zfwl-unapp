@@ -24,8 +24,8 @@ const sheep = {
   $zIndex: zIndex,
 };
 
-// 加载Shopro底层依赖
-export async function ShoproInit() {
+// 加载应用底层依赖
+export async function TutorAppInit() {
   // 应用初始化
   await $store('app').init();
 
@@ -33,12 +33,12 @@ export async function ShoproInit() {
   $platform.load();
 
   if (process.env.NODE_ENV === 'development') {
-    ShoproDebug();
+    TutorAppDebug();
   }
 }
 
 // 开发模式
-function ShoproDebug() {
+function TutorAppDebug() {
   // 开发环境引入vconsole调试
   // #ifdef H5
   // import("vconsole").then(vconsole => {

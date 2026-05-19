@@ -1,5 +1,5 @@
 /**
- * Shopro-request
+ * Tutor request
  * @description api模块管理，loading配置，请求拦截，错误处理
  */
 
@@ -125,9 +125,8 @@ http.interceptors.response.use(
       if (response.data.code === 401) {
         return refreshToken(response.config);
       }
-      // 特殊：处理分销用户绑定失败的提示
       if ((response.data.code + '').includes('1011007')) {
-        console.error(`分销用户绑定失败，原因：${response.data.msg}`);
+        console.error(`用户关系绑定失败，原因：${response.data.msg}`);
       } else if (response.config.custom.showError) {
         // 错误提示
         uni.showToast({

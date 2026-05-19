@@ -21,17 +21,20 @@
     </view>
     <!-- 类型三： 搜索框 -->
     <view class="ss-flex-1" v-if="data.type === 'search'" :style="[{ width: width }]">
-      <s-search-block
-        :placeholder="data.placeholder || '搜索关键字'"
-        :placeholder-position="data.placeholderPosition"
-        :radius="data.borderRadius"
-        :el-background="data.backgroundColor"
-        :font-color="data.textColor"
-        :height="height"
-        :width="width"
-        :show-scan="data.showScan"
-        @click="sheep.$router.go('/pages/index/search')"
-      ></s-search-block>
+      <view
+        class="nav-search ss-flex ss-col-center"
+        :style="[
+          {
+            height: height + 'px',
+            borderRadius: (data.borderRadius || 16) + 'rpx',
+            background: data.backgroundColor || '#f3f4f6',
+            color: data.textColor || '#6b7280',
+          },
+        ]"
+      >
+        <text class="cicon-search"></text>
+        <text class="nav-search-text">{{ data.placeholder || '搜索家教信息' }}</text>
+      </view>
     </view>
   </view>
 </template>
@@ -66,5 +69,14 @@
     .nav-image {
       height: 24px;
     }
+  }
+
+  .nav-search {
+    padding: 0 20rpx;
+    font-size: 26rpx;
+  }
+
+  .nav-search-text {
+    margin-left: 10rpx;
   }
 </style>

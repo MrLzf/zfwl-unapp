@@ -1,5 +1,5 @@
 /**
- * Shopro 第三方平台功能聚合
+ * 第三方平台功能聚合
  * @version 1.0.3
  * @author lidongtony
  * @param {String} name - 厂商+平台名称
@@ -17,7 +17,6 @@ import wechat from './provider/wechat/index.js';
 import alipay from './provider/alipay/index';
 import apple from './provider/apple';
 import share from './share';
-import Pay from './pay';
 
 const device = uni.getWindowInfo();
 
@@ -54,16 +53,16 @@ platform = 'miniProgram';
 provider = 'wechat';
 // #endif
 
-// #ifdef MP-ALIPAY 
+// #ifdef MP-ALIPAY
 name = 'alipayMiniProgram';
 platform = 'alipayMiniProgram';
 provider = 'alipay';
 if (!device.safeAreaInsets) {
-  device.safeAreaInsets = uni.getSystemInfoSync().safeAreaInsets
+  device.safeAreaInsets = uni.getSystemInfoSync().safeAreaInsets;
 }
 // 兜底一下。还是没有值时候，就给个默认值
 if (!device.safeAreaInsets) {
-  device.safeAreaInsets = {}
+  device.safeAreaInsets = {};
 }
 // #endif
 
@@ -89,11 +88,6 @@ const useProvider = (_provider = '') => {
   if (_provider === 'wechat') return wechat;
   if (_provider === 'apple') return apple;
   if (_provider === 'alipay') return alipay;
-};
-
-// 支付服务转发
-const pay = (payment, orderType, orderSN) => {
-  return new Pay(payment, orderType, orderSN);
 };
 
 /**
@@ -180,7 +174,6 @@ const _platform = {
   useProvider,
   checkUpdate,
   checkNetwork,
-  pay,
   share,
   load,
   capsule,

@@ -55,10 +55,7 @@
           @tap="thirdLogin('wechat')"
           class="ss-reset-button auto-login-btn"
         >
-          <image
-            class="auto-login-img"
-            :src="sheep.$url.static('/static/img/shop/platform/wechat.png')"
-          />
+          <text class="auto-login-text">微信</text>
         </button>
 
         <!-- 7.3 iOS 登录 TODO 芋艿：等后面搞 App 再弄 -->
@@ -67,10 +64,7 @@
           @tap="thirdLogin('apple')"
           class="ss-reset-button auto-login-btn"
         >
-          <image
-            class="auto-login-img"
-            :src="sheep.$url.static('/static/img/shop/platform/apple.png')"
-          />
+          <text class="auto-login-text">Apple</text>
         </button>
 
         <!-- 7.4 支付宝小程序登录 -->
@@ -79,10 +73,7 @@
           @tap="thirdLogin('alipay')"
           class="ss-reset-button auto-login-btn"
         >
-          <image
-            class="auto-login-img"
-            :src="sheep.$url.static('/static/img/shop/pay/alipay.png')"
-          />
+          <text class="auto-login-text">支付宝</text>
         </button>
       </view>
 
@@ -93,7 +84,7 @@
         :class="{ shake: currentProtocol }"
       >
         <view class="agreement-title">请选择是否同意以下协议(请联网查看)：</view>
-        
+
         <view class="agreement-options-container">
           <!-- 同意选项 -->
           <view class="agreement-option">
@@ -112,7 +103,7 @@
               </view>
             </view>
           </view>
-          
+
           <!-- 拒绝选项 -->
           <view class="agreement-option">
             <view class="radio ss-flex ss-col-center" @tap="onRefuse">
@@ -162,7 +153,7 @@
   function onAgree() {
     state.protocol = true;
   }
-  
+
   // 拒绝协议
   function onRefuse() {
     state.protocol = false;
@@ -191,7 +182,7 @@
       setTimeout(() => {
         currentProtocol.value = false;
       }, 1000);
-      
+
       if (state.protocol === false) {
         sheep.$helper.toast('您已拒绝协议，无法继续登录');
       } else {
@@ -284,6 +275,18 @@
     height: calc(env(safe-area-inset-bottom) / 5 * 3);
   }
 
+  .auto-login-text {
+    min-width: 96rpx;
+    height: 56rpx;
+    padding: 0 18rpx;
+    border-radius: 28rpx;
+    color: var(--ui-BG-Main);
+    background: var(--ui-BG-Main-opacity-1);
+    font-size: 24rpx;
+    line-height: 56rpx;
+    text-align: center;
+  }
+
   .tcp-text {
     color: #999999;
   }
@@ -291,7 +294,7 @@
   .agreement-text {
     color: $dark-9;
   }
-  
+
   .agreement-title {
     font-size: 30rpx;
     line-height: 42rpx;
@@ -300,13 +303,13 @@
     width: 100%;
     padding-left: 50rpx;
   }
-  
+
   .agreement-options-container {
     width: 100%;
     padding-left: 84rpx;
     margin-top: 20rpx;
   }
-  
+
   .agreement-option {
     width: 100%;
     display: flex;

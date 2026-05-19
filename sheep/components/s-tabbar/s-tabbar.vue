@@ -19,13 +19,13 @@
         :dot="item.dot"
         :badgeStyle="tabbar.badgeStyle"
         :isCenter="getTabbarCenter(index)"
-        :centerImage="sheep.$url.cdn(item.iconUrl)"
+        :centerImage="item.iconUrl ? sheep.$url.cdn(item.iconUrl) : ''"
         @click="sheep.$router.go(item.url)"
       >
-        <template v-slot:active-icon>
+        <template v-if="item.activeIconUrl" v-slot:active-icon>
           <image class="u-page__item__slot-icon" :src="sheep.$url.cdn(item.activeIconUrl)"></image>
         </template>
-        <template v-slot:inactive-icon>
+        <template v-if="item.iconUrl" v-slot:inactive-icon>
           <image class="u-page__item__slot-icon" :src="sheep.$url.cdn(item.iconUrl)"></image>
         </template>
       </su-tabbar-item>

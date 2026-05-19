@@ -1,6 +1,6 @@
 <script setup>
   import { onLaunch, onShow, onError } from '@dcloudio/uni-app';
-  import { ShoproInit } from './sheep';
+  import { TutorAppInit } from './sheep';
 
   onLaunch(() => {
     // 隐藏原生导航栏 使用自定义底部导航
@@ -8,8 +8,8 @@
       fail: () => {},
     });
 
-    // 加载Shopro底层依赖
-    ShoproInit();
+    // 加载应用底层依赖
+    TutorAppInit();
   });
 
   onShow(() => {

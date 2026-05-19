@@ -15,7 +15,7 @@
             class="content-img"
             isPreview
             :current="0"
-            :src="state.model?.avatar || sheep.$url.static('/static/img/shop/default_avatar.png')"
+            :src="state.model?.avatar || sheep.$url.static('/static/data-empty.png')"
             :height="160"
             :width="160"
             :radius="80"
@@ -113,19 +113,6 @@
           </uni-easyinput>
         </uni-forms-item>
       </view>
-
-      <view class="bg-white ss-m-t-14">
-        <uni-list>
-          <uni-list-item
-            clickable
-            @tap="sheep.$router.go('/pages/user/address/list')"
-            title="地址管理"
-            showArrow
-            :border="false"
-            class="list-border"
-          />
-        </uni-list>
-      </view>
     </uni-forms>
 
     <!-- 当前社交平台的绑定关系，只处理 wechat 微信场景 -->
@@ -133,24 +120,12 @@
       <view class="title-box ss-p-l-30">第三方账号绑定</view>
       <view class="account-list ss-flex ss-row-between">
         <view v-if="'WechatOfficialAccount' === sheep.$platform.name" class="ss-flex ss-col-center">
-          <image
-            class="list-img"
-            :src="sheep.$url.static('/static/img/shop/platform/WechatOfficialAccount.png')"
-          />
           <text class="list-name">微信公众号</text>
         </view>
         <view v-if="'WechatMiniProgram' === sheep.$platform.name" class="ss-flex ss-col-center">
-          <image
-            class="list-img"
-            :src="sheep.$url.static('/static/img/shop/platform/WechatMiniProgram.png')"
-          />
           <text class="list-name">微信小程序</text>
         </view>
         <view v-if="'App' === sheep.$platform.name" class="ss-flex ss-col-center">
-          <image
-            class="list-img"
-            :src="sheep.$url.static('/static/img/shop/platform/wechat.png')"
-          />
           <text class="list-name">微信开放平台</text>
         </view>
         <view class="ss-flex ss-col-center">

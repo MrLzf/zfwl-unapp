@@ -209,7 +209,7 @@ async function uploadFiles(choosePromise, { onChooseFile, onUploadProgress, dire
   }
 
   // 如果是前端直连上传
-  if (UPLOAD_TYPE.CLIENT === import.meta.env.SHOPRO_UPLOAD_TYPE) {
+  if (UPLOAD_TYPE.CLIENT === import.meta.env.TUTOR_UPLOAD_TYPE) {
     // 为上传创建一组 Promise
     const uploadPromises = files.map(async (file) => {
       try {
