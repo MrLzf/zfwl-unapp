@@ -40,6 +40,7 @@
         >
           {{ filter.label }}
         </button>
+        <button class="filter-tab ss-reset-button" @tap="goFilter">筛选</button>
       </view>
 
       <view class="list">
@@ -114,6 +115,10 @@
 
   function goCity() {
     uni.navigateTo({ url: '/pages/tutor/city/index' });
+  }
+
+  function goFilter() {
+    uni.navigateTo({ url: '/pages/tutor/filter/index' });
   }
 
   function goDetail(item) {
@@ -232,7 +237,7 @@
 
   .filter-tabs {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 14rpx;
     margin: 22rpx 0;
   }

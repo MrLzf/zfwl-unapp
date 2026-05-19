@@ -19,7 +19,7 @@
           <view class="hero-desc">认证资料、城市筛选、积分查看联系方式，一条链路完成匹配。</view>
         </view>
 
-        <view class="search-box" @tap="goSquare">
+        <view class="search-box" @tap="goSearch">
           <text class="cicon-search"></text>
           <text>搜索科目、年级、老师或需求</text>
         </view>
@@ -132,6 +132,10 @@
 
   function goSquare() {
     uni.switchTab({ url: '/pages/index/square' });
+  }
+
+  function goSearch() {
+    uni.navigateTo({ url: '/pages/tutor/search/index' });
   }
 
   function goPublish(role) {

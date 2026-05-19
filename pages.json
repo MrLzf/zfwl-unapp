@@ -110,6 +110,94 @@
             "title": "需求详情",
             "group": "家教"
           }
+        },
+        {
+          "path": "certification/index",
+          "style": {
+            "navigationBarTitleText": "教师认证"
+          },
+          "meta": {
+            "auth": true,
+            "title": "教师认证",
+            "group": "家教"
+          }
+        },
+        {
+          "path": "my-posts/index",
+          "style": {
+            "navigationBarTitleText": "我的发布"
+          },
+          "meta": {
+            "auth": true,
+            "title": "我的发布",
+            "group": "家教"
+          }
+        },
+        {
+          "path": "contacts/index",
+          "style": {
+            "navigationBarTitleText": "联系记录"
+          },
+          "meta": {
+            "auth": true,
+            "title": "联系记录",
+            "group": "家教"
+          }
+        },
+        {
+          "path": "favorites/index",
+          "style": {
+            "navigationBarTitleText": "我的收藏"
+          },
+          "meta": {
+            "auth": true,
+            "title": "我的收藏",
+            "group": "家教"
+          }
+        },
+        {
+          "path": "history/index",
+          "style": {
+            "navigationBarTitleText": "浏览历史"
+          },
+          "meta": {
+            "auth": true,
+            "title": "浏览历史",
+            "group": "家教"
+          }
+        },
+        {
+          "path": "reviews/index",
+          "style": {
+            "navigationBarTitleText": "我的评价"
+          },
+          "meta": {
+            "auth": true,
+            "title": "我的评价",
+            "group": "家教"
+          }
+        },
+        {
+          "path": "search/index",
+          "style": {
+            "navigationBarTitleText": "搜索"
+          },
+          "meta": {
+            "auth": false,
+            "title": "搜索",
+            "group": "家教"
+          }
+        },
+        {
+          "path": "filter/index",
+          "style": {
+            "navigationBarTitleText": "高级筛选"
+          },
+          "meta": {
+            "auth": false,
+            "title": "高级筛选",
+            "group": "家教"
+          }
         }
       ]
     },

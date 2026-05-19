@@ -45,6 +45,13 @@
       </view>
       <view
         class="menu-item ss-flex ss-row-between ss-col-center"
+        @tap="go('/pages/tutor/certification/index')"
+      >
+        <text>教师认证</text>
+        <text class="cicon-forward"></text>
+      </view>
+      <view
+        class="menu-item ss-flex ss-row-between ss-col-center"
         @tap="go('/pages/tutor/city/index')"
       >
         <text>选择城市</text>
@@ -52,9 +59,37 @@
       </view>
       <view
         class="menu-item ss-flex ss-row-between ss-col-center"
-        @tap="go('/pages/index/publish')"
+        @tap="go('/pages/tutor/my-posts/index')"
       >
         <text>我的发布</text>
+        <text class="cicon-forward"></text>
+      </view>
+      <view
+        class="menu-item ss-flex ss-row-between ss-col-center"
+        @tap="go('/pages/tutor/contacts/index')"
+      >
+        <text>联系记录</text>
+        <text class="cicon-forward"></text>
+      </view>
+      <view
+        class="menu-item ss-flex ss-row-between ss-col-center"
+        @tap="go('/pages/tutor/favorites/index')"
+      >
+        <text>我的收藏</text>
+        <text class="cicon-forward"></text>
+      </view>
+      <view
+        class="menu-item ss-flex ss-row-between ss-col-center"
+        @tap="go('/pages/tutor/history/index')"
+      >
+        <text>浏览历史</text>
+        <text class="cicon-forward"></text>
+      </view>
+      <view
+        class="menu-item ss-flex ss-row-between ss-col-center"
+        @tap="go('/pages/tutor/reviews/index')"
+      >
+        <text>我的评价</text>
         <text class="cicon-forward"></text>
       </view>
       <view class="menu-item ss-flex ss-row-between ss-col-center" @tap="go('/pages/index/square')">
