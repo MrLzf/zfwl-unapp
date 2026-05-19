@@ -1,72 +1,161 @@
 <template>
   <s-layout title="" navbar="" tabbar="/pages/index/index" class="tutor-home">
     <view class="home-shell">
-      <view class="hero">
+      <view class="hero" :class="{ teacher: isTeacher }">
         <view class="hero-top">
           <view class="city-pill" @tap="goCity">
             <text class="cicon-location-on"></text>
-            <text>{{ city.name || '选择城市' }}</text>
-            <text class="cicon-forward"></text>
+            <text>{{ city.name || '北京市' }}</text>
+            <text class="cicon-drop-down"></text>
           </view>
-          <button class="identity-btn ss-reset-button" @tap="goIdentity">
-            {{ profile?.roleName || '选择身份' }}
+          <button class="message-btn ss-reset-button" @tap="goMessages">
+            <text class="cicon-chat-o"></text>
           </button>
-        </view>
-
-        <view class="hero-copy">
-          <view class="eyebrow">本地家教供需匹配</view>
-          <view class="hero-title">为孩子找到可靠老师，为老师找到合适家庭</view>
-          <view class="hero-desc">认证资料、城市筛选、积分查看联系方式，一条链路完成匹配。</view>
         </view>
 
         <view class="search-box" @tap="goSearch">
           <text class="cicon-search"></text>
-          <text>搜索科目、年级、老师或需求</text>
+          <text>{{ searchPlaceholder }}</text>
+        </view>
+      </view>
+
+      <view class="content">
+        <view class="quick-actions">
+          <button
+            v-for="action in quickActions"
+            :key="action.label"
+            class="quick-item ss-reset-button"
+            @tap="handleAction(action)"
+          >
+            <view class="quick-icon" :class="action.color">
+              <text :class="action.icon"></text>
+            </view>
+            <view class="quick-label">{{ action.label }}</view>
+          </button>
         </view>
 
-        <view class="stats-row">
-          <view v-for="item in tutorStats" :key="item.label" class="stat-item">
-            <view class="stat-value">{{ item.value }}</view>
-            <view class="stat-label">{{ item.label }}</view>
+        <view class="banner-wrap">
+          <swiper
+            class="banner-swiper"
+            circular
+            autoplay
+            :interval="3200"
+            :current="currentBanner"
+            @change="onBannerChange"
+          >
+            <swiper-item v-for="banner in banners" :key="banner.id">
+              <view class="banner-card" :class="banner.color" @tap="handleBanner(banner)">
+                <view>
+                  <view class="banner-tag">
+                    <text :class="banner.icon"></text>
+                    <text>{{ banner.tag }}</text>
+                  </view>
+                  <view class="banner-title">{{ banner.title }}</view>
+                  <view class="banner-subtitle">{{ banner.subtitle }}</view>
+                </view>
+                <button class="banner-btn ss-reset-button" @tap.stop="handleBanner(banner)">
+                  {{ banner.buttonText }}
+                </button>
+              </view>
+            </swiper-item>
+          </swiper>
+
+          <view class="dots">
+            <view
+              v-for="(_, index) in banners"
+              :key="index"
+              class="dot"
+              :class="{ active: currentBanner === index }"
+            ></view>
           </view>
         </view>
-      </view>
 
-      <view class="quick-actions">
-        <button class="action-card parent ss-reset-button" @tap="goPublish('parent')">
-          <view class="action-label">我是家长</view>
-          <view class="action-title">发布辅导需求</view>
-          <view class="action-desc">描述孩子年级、科目和预算</view>
-        </button>
-        <button class="action-card teacher ss-reset-button" @tap="goPublish('teacher')">
-          <view class="action-label">我是老师</view>
-          <view class="action-title">创建教师简历</view>
-          <view class="action-desc">展示认证、经验和授课范围</view>
-        </button>
-      </view>
-
-      <view class="section-head">
-        <view>
-          <view class="section-title">今日推荐</view>
-          <view class="section-subtitle">优先展示同城高匹配信息</view>
+        <view class="section-head">
+          <view class="section-title">
+            <text :class="primarySection.icon"></text>
+            <text>{{ primarySection.title }}</text>
+          </view>
+          <button class="link-btn ss-reset-button" @tap="goSquare">查看全部</button>
         </view>
-        <button class="text-btn ss-reset-button" @tap="goSquare">全部</button>
-      </view>
 
-      <view class="feed-list">
-        <view v-for="item in featuredItems" :key="item.id" class="feed-card" @tap="goDetail(item)">
-          <view class="feed-main">
-            <image class="avatar" :src="item.avatar" mode="aspectFill" />
-            <view class="feed-content">
-              <view class="feed-title">{{ item.title || item.name }}</view>
-              <view class="feed-meta"
-                >{{ item.district }} · {{ item.distance }}km · {{ modeText(item.mode) }}</view
-              >
-              <view class="tag-row">
-                <text v-for="tag in item.expectations.slice(0, 2)" :key="tag">{{ tag }}</text>
+        <view v-if="isTeacher" class="request-list">
+          <view
+            v-for="item in hotRequests"
+            :key="item.id"
+            class="request-card"
+            @tap="goDetail(item)"
+          >
+            <view class="request-top">
+              <view>
+                <view class="request-title">
+                  <text v-if="item.urgent" class="urgent">急</text>
+                  <text>{{ item.title }}</text>
+                </view>
+                <view class="request-meta"
+                  >{{ item.grade }} · {{ item.subject }} · {{ item.frequency }}</view
+                >
               </view>
+              <view class="price">¥{{ item.budget }}/时</view>
             </view>
-            <view class="price">¥{{ item.budget || item.price }}/时</view>
+            <view class="request-foot">
+              <view class="mini-user">
+                <image class="mini-avatar" :src="item.avatar" mode="aspectFill" />
+                <text>{{ item.parentName || item.contactName }}</text>
+              </view>
+              <text>{{ item.distance }}km · {{ modeText(item.mode) }}</text>
+            </view>
+          </view>
+        </view>
+
+        <view v-else class="teacher-grid">
+          <view
+            v-for="item in topTeachers"
+            :key="item.id"
+            class="teacher-card"
+            @tap="goDetail(item)"
+          >
+            <image class="teacher-avatar" :src="item.avatar" mode="aspectFill" />
+            <view class="teacher-name">{{ item.name }}</view>
+            <view class="teacher-edu">{{ item.education }}</view>
+            <view class="rating-row">
+              <text class="cicon-star"></text>
+              <text>{{ item.score || item.rating || '4.9' }}</text>
+              <text class="review-count">({{ item.reviewCount || item.reviews || 128 }})</text>
+            </view>
+            <view class="subject-row">
+              <text v-for="subject in item.subjects.slice(0, 2)" :key="subject">{{ subject }}</text>
+            </view>
+            <view class="teacher-foot">
+              <text>{{ item.distance }}km</text>
+              <text class="price">¥{{ item.price }}/时</text>
+            </view>
+          </view>
+        </view>
+
+        <view v-if="!isTeacher" class="section-head secondary">
+          <view class="section-title">
+            <text class="cicon-flash-on"></text>
+            <text>热门需求</text>
+          </view>
+          <button class="link-btn ss-reset-button" @tap="goSquare">查看全部</button>
+        </view>
+
+        <view v-if="!isTeacher" class="request-list compact">
+          <view
+            v-for="item in hotRequests.slice(0, 3)"
+            :key="item.id"
+            class="request-card"
+            @tap="goDetail(item)"
+          >
+            <view class="request-top">
+              <view>
+                <view class="request-title">{{ item.title }}</view>
+                <view class="request-meta"
+                  >{{ item.grade }} · {{ item.subject }} · {{ item.frequency }}</view
+                >
+              </view>
+              <view class="price">¥{{ item.budget }}/时</view>
+            </view>
           </view>
         </view>
       </view>
@@ -77,29 +166,113 @@
 <script setup>
   import { computed, reactive, toRefs } from 'vue';
   import { onShow, onPullDownRefresh } from '@dcloudio/uni-app';
+  import sheep from '@/sheep';
+  import { showAuthModal } from '@/sheep/hooks/useModal';
   import TutorProfileApi from '@/sheep/api/tutor/profile';
-  import { tutorItems, tutorStats } from '@/sheep/api/tutor/mock-data';
+  import { tutorRequests, tutorTeachers } from '@/sheep/api/tutor/mock-data';
 
   const state = reactive({
     city: {},
     profile: null,
+    currentBanner: 0,
   });
 
-  const { city, profile } = toRefs(state);
-  const featuredItems = computed(() => tutorItems.slice(0, 3));
+  const { city, profile, currentBanner } = toRefs(state);
+  const userStore = sheep.$store('user');
+
+  const isTeacher = computed(() => {
+    return state.profile?.role === 2 || state.profile?.roleName === '教师';
+  });
+
+  const searchPlaceholder = computed(() =>
+    isTeacher.value ? '搜索家长需求、科目或年级' : '搜索科目、老师或年级',
+  );
+
+  const quickActions = computed(() => [
+    {
+      label: '找老师',
+      icon: 'cicon-book',
+      color: 'blue',
+      path: '/pages/index/square',
+      tab: true,
+    },
+    {
+      label: '找家长',
+      icon: 'cicon-group',
+      color: 'orange',
+      path: '/pages/index/square',
+      tab: true,
+    },
+    {
+      label: isTeacher.value ? '发布简历' : '发布需求',
+      icon: 'cicon-flash-on',
+      color: 'green',
+      publishRole: isTeacher.value ? 'teacher' : 'parent',
+      auth: true,
+    },
+    {
+      label: '认证',
+      icon: 'cicon-check-round',
+      color: 'purple',
+      path: '/pages/tutor/certification/index',
+      auth: isTeacher.value,
+    },
+  ]);
+
+  const banners = [
+    {
+      id: 1,
+      tag: '限时活动',
+      title: '新用户专享',
+      subtitle: '首单立减50元',
+      buttonText: '立即领取',
+      icon: 'cicon-flash-on',
+      color: 'warm',
+      auth: true,
+    },
+    {
+      id: 2,
+      tag: '会员福利',
+      title: 'VIP专属',
+      subtitle: '查看联系方式享优惠',
+      buttonText: '开通会员',
+      icon: 'cicon-service-fill',
+      color: 'cool',
+      auth: true,
+    },
+    {
+      id: 3,
+      tag: '推荐好友',
+      title: '邀请有礼',
+      subtitle: '双方获得积分奖励',
+      buttonText: '去邀请',
+      icon: 'cicon-service',
+      color: 'fresh',
+      auth: true,
+    },
+  ];
+
+  const primarySection = computed(() =>
+    isTeacher.value
+      ? { title: '热门需求', icon: 'cicon-flash-on' }
+      : { title: '优质教师', icon: 'cicon-check-round' },
+  );
+
+  const topTeachers = computed(() => tutorTeachers.slice(0, 4));
+  const hotRequests = computed(() => tutorRequests.slice(0, 4));
 
   function loadCity() {
     state.city = uni.getStorageSync('tutor_city') || {};
   }
 
   async function loadProfile() {
-    const token = uni.getStorageSync('token');
-    if (!token) {
+    if (!userStore.isLogin) {
       state.profile = uni.getStorageSync('tutor_profile') || null;
       return;
     }
-    const { code, data } = await TutorProfileApi.getProfile();
+    const { code, data } = await TutorProfileApi.getProfileSilent();
     if (code !== 0) {
+      state.profile = uni.getStorageSync('tutor_profile') || null;
       return;
     }
     state.profile = data || null;
@@ -114,6 +287,14 @@
     }
   }
 
+  function ensureAuth(callback) {
+    if (userStore.isLogin) {
+      callback();
+      return;
+    }
+    showAuthModal();
+  }
+
   function modeText(mode) {
     return {
       offline: '上门',
@@ -122,12 +303,39 @@
     }[mode];
   }
 
-  function goCity() {
-    uni.navigateTo({ url: '/pages/tutor/city/index' });
+  function handleAction(action) {
+    if (action.publishRole) {
+      ensureAuth(() => goPublish(action.publishRole));
+      return;
+    }
+    const navigate = () => {
+      if (action.tab) {
+        uni.switchTab({ url: action.path });
+      } else {
+        uni.navigateTo({ url: action.path });
+      }
+    };
+    if (action.auth) {
+      ensureAuth(navigate);
+      return;
+    }
+    navigate();
   }
 
-  function goIdentity() {
-    uni.navigateTo({ url: '/pages/tutor/identity/index' });
+  function handleBanner(banner) {
+    if (banner.auth) {
+      ensureAuth(() => uni.showToast({ title: banner.buttonText, icon: 'none' }));
+      return;
+    }
+    uni.showToast({ title: banner.buttonText, icon: 'none' });
+  }
+
+  function onBannerChange(event) {
+    state.currentBanner = event.detail.current;
+  }
+
+  function goCity() {
+    uni.navigateTo({ url: '/pages/tutor/city/index' });
   }
 
   function goSquare() {
@@ -136,6 +344,10 @@
 
   function goSearch() {
     uni.navigateTo({ url: '/pages/tutor/search/index' });
+  }
+
+  function goMessages() {
+    ensureAuth(() => uni.switchTab({ url: '/pages/index/message' }));
   }
 
   function goPublish(role) {
@@ -163,250 +375,412 @@
 </script>
 
 <style lang="scss" scoped>
-  .tutor-home {
+  .tutor-home,
+  .home-shell {
     min-height: 100vh;
     background: #f5f7f5;
   }
 
   .home-shell {
-    min-height: 100vh;
     padding-bottom: 28rpx;
-    background: #f5f7f5;
   }
 
   .hero {
-    padding: calc(var(--status-bar-height) + 24rpx) 24rpx 30rpx;
-    color: #ffffff;
-    background: linear-gradient(135deg, #0f766e 0%, #155e75 55%, #1f2937 100%);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: calc(var(--status-bar-height) + 44rpx) 30rpx 54rpx;
+    color: #fff;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    border-bottom-left-radius: 44rpx;
+    border-bottom-right-radius: 44rpx;
   }
 
-  .hero-top,
-  .feed-main,
-  .section-head {
+  .hero.teacher {
+    background: linear-gradient(135deg, #16a34a 0%, #059669 100%);
+  }
+
+  .hero-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    margin-bottom: 32rpx;
   }
 
   .city-pill,
-  .identity-btn {
-    min-height: 60rpx;
+  .message-btn {
     display: flex;
     align-items: center;
-    border-radius: 999rpx;
-    font-size: 25rpx;
+    color: #fff;
   }
 
   .city-pill {
     gap: 8rpx;
-    padding: 0 18rpx;
-    color: #ecfeff;
-    background: rgba(255, 255, 255, 0.14);
-  }
-
-  .identity-btn {
-    padding: 0 22rpx;
-    color: #0f766e;
-    background: #ffffff;
-    font-weight: 600;
-  }
-
-  .hero-copy {
-    padding: 54rpx 0 34rpx;
-  }
-
-  .eyebrow {
-    margin-bottom: 14rpx;
-    color: #a7f3d0;
-    font-size: 24rpx;
-    font-weight: 600;
-  }
-
-  .hero-title {
-    max-width: 620rpx;
-    font-size: 48rpx;
+    font-size: 31rpx;
     font-weight: 800;
-    line-height: 64rpx;
   }
 
-  .hero-desc {
-    max-width: 600rpx;
-    margin-top: 18rpx;
-    color: #d1fae5;
-    font-size: 26rpx;
-    line-height: 40rpx;
+  .city-pill text:first-child,
+  .message-btn text {
+    font-size: 36rpx;
+  }
+
+  .message-btn {
+    width: 58rpx;
+    height: 58rpx;
+    justify-content: center;
   }
 
   .search-box {
     height: 84rpx;
     display: flex;
     align-items: center;
-    gap: 12rpx;
-    padding: 0 24rpx;
-    border-radius: 12rpx;
-    color: #64748b;
-    background: #ffffff;
-    font-size: 26rpx;
-  }
-
-  .stats-row {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16rpx;
-    margin-top: 24rpx;
+    padding: 0 30rpx;
+    border-radius: 24rpx;
+    color: #94a3b8;
+    background: #fff;
+    font-size: 28rpx;
+    box-shadow: 0 16rpx 32rpx rgba(15, 23, 42, 0.08);
   }
 
-  .stat-item {
-    padding: 20rpx 8rpx;
-    border-radius: 12rpx;
-    text-align: center;
-    background: rgba(255, 255, 255, 0.13);
+  .search-box text:first-child {
+    font-size: 36rpx;
   }
 
-  .stat-value {
-    font-size: 32rpx;
-    font-weight: 800;
-  }
-
-  .stat-label {
-    margin-top: 8rpx;
-    color: #ccfbf1;
-    font-size: 22rpx;
+  .content {
+    margin-top: -22rpx;
+    padding-bottom: 24rpx;
   }
 
   .quick-actions {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 18rpx;
-    padding: 24rpx;
+    padding: 24rpx 30rpx 28rpx;
+    background: #fff;
+    border-top-left-radius: 28rpx;
+    border-top-right-radius: 28rpx;
   }
 
-  .action-card {
-    min-height: 196rpx;
-    margin: 0;
-    padding: 24rpx;
-    border-radius: 12rpx;
-    text-align: left;
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
+  .quick-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14rpx;
   }
 
-  .action-card.parent {
-    border-color: #bbf7d0;
-    background: #f0fdf4;
+  .quick-icon {
+    width: 108rpx;
+    height: 108rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 28rpx;
+    color: #fff;
+    box-shadow: 0 16rpx 28rpx rgba(15, 23, 42, 0.12);
   }
 
-  .action-card.teacher {
-    border-color: #bae6fd;
-    background: #f0f9ff;
+  .quick-icon text {
+    font-size: 48rpx;
   }
 
-  .action-label {
-    color: #0f766e;
-    font-size: 23rpx;
-    font-weight: 700;
+  .quick-icon.blue {
+    background: #2f80ed;
   }
 
-  .action-title {
-    margin-top: 14rpx;
-    color: #111827;
-    font-size: 31rpx;
-    font-weight: 800;
-    line-height: 40rpx;
+  .quick-icon.orange {
+    background: #ff6b00;
   }
 
-  .action-desc {
-    margin-top: 10rpx;
-    color: #64748b;
-    font-size: 24rpx;
-    line-height: 34rpx;
+  .quick-icon.green {
+    background: #12c55b;
   }
 
-  .section-head {
-    padding: 8rpx 24rpx 18rpx;
+  .quick-icon.purple {
+    background: #a855f7;
   }
 
-  .section-title {
-    color: #111827;
-    font-size: 32rpx;
-    font-weight: 800;
+  .quick-label {
+    color: #334155;
+    font-size: 25rpx;
   }
 
-  .section-subtitle {
-    margin-top: 8rpx;
-    color: #64748b;
-    font-size: 24rpx;
+  .banner-wrap {
+    padding: 32rpx 30rpx 18rpx;
   }
 
-  .text-btn {
-    color: #0f766e;
+  .banner-swiper {
+    height: 238rpx;
+  }
+
+  .banner-card {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+    padding: 44rpx;
+    border-radius: 24rpx;
+    color: #fff;
+  }
+
+  .banner-card.warm {
+    background: linear-gradient(135deg, #ff8a1f 0%, #f02d93 100%);
+  }
+
+  .banner-card.cool {
+    background: linear-gradient(135deg, #38bdf8 0%, #7c3aed 100%);
+  }
+
+  .banner-card.fresh {
+    background: linear-gradient(135deg, #22c55e 0%, #0f766e 100%);
+  }
+
+  .banner-tag {
+    display: flex;
+    align-items: center;
+    gap: 10rpx;
     font-size: 26rpx;
     font-weight: 700;
   }
 
-  .feed-list {
-    display: flex;
-    flex-direction: column;
-    gap: 18rpx;
-    padding: 0 24rpx;
+  .banner-tag text:first-child {
+    font-size: 34rpx;
   }
 
-  .feed-card {
-    padding: 24rpx;
-    border-radius: 12rpx;
-    background: #ffffff;
-    border: 1px solid #e8eef0;
+  .banner-title {
+    margin-top: 20rpx;
+    font-size: 38rpx;
+    font-weight: 900;
   }
 
-  .avatar {
-    width: 88rpx;
-    height: 88rpx;
-    border-radius: 44rpx;
+  .banner-subtitle {
+    margin-top: 10rpx;
+    font-size: 28rpx;
+  }
+
+  .banner-btn {
     flex-shrink: 0;
+    min-width: 150rpx;
+    height: 72rpx;
+    padding: 0 28rpx;
+    border-radius: 999rpx;
+    color: #f97316;
+    background: #fff;
+    font-size: 25rpx;
+    font-weight: 800;
+    box-shadow: 0 12rpx 24rpx rgba(15, 23, 42, 0.16);
+  }
+
+  .dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14rpx;
+    margin-top: 20rpx;
+  }
+
+  .dot {
+    width: 14rpx;
+    height: 14rpx;
+    border-radius: 7rpx;
+    background: #cbd5e1;
+  }
+
+  .dot.active {
+    width: 48rpx;
+    background: #2563eb;
+  }
+
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12rpx 30rpx 22rpx;
+  }
+
+  .section-head.secondary {
+    padding-top: 34rpx;
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 10rpx;
+    color: #111827;
+    font-size: 34rpx;
+    font-weight: 900;
+  }
+
+  .section-title text:first-child {
+    color: #8b5cf6;
+    font-size: 36rpx;
+  }
+
+  .link-btn {
+    color: #2563eb;
+    font-size: 24rpx;
+    font-weight: 700;
+  }
+
+  .teacher-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20rpx;
+    padding: 0 30rpx;
+  }
+
+  .teacher-card,
+  .request-card {
+    border-radius: 18rpx;
+    background: #fff;
+    border: 1px solid #eef2f7;
+    box-shadow: 0 4rpx 12rpx rgba(15, 23, 42, 0.08);
+  }
+
+  .teacher-card {
+    min-width: 0;
+    padding: 30rpx 22rpx 24rpx;
+    text-align: center;
+  }
+
+  .teacher-avatar {
+    width: 112rpx;
+    height: 112rpx;
+    border-radius: 56rpx;
+    margin-bottom: 22rpx;
     background: #e5e7eb;
   }
 
-  .feed-content {
-    min-width: 0;
-    flex: 1;
-    margin: 0 18rpx;
+  .teacher-name {
+    color: #111827;
+    font-size: 30rpx;
+    font-weight: 900;
   }
 
-  .feed-title {
+  .teacher-edu {
     overflow: hidden;
-    color: #111827;
-    font-size: 29rpx;
-    font-weight: 800;
-    line-height: 38rpx;
+    margin-top: 10rpx;
+    color: #64748b;
+    font-size: 22rpx;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .feed-meta {
-    margin-top: 8rpx;
-    color: #64748b;
-    font-size: 23rpx;
+  .rating-row,
+  .teacher-foot,
+  .request-top,
+  .request-foot,
+  .mini-user {
+    display: flex;
+    align-items: center;
   }
 
-  .tag-row {
+  .rating-row {
+    justify-content: center;
+    gap: 6rpx;
+    margin-top: 12rpx;
+    color: #f59e0b;
+    font-size: 23rpx;
+    font-weight: 800;
+  }
+
+  .review-count {
+    color: #94a3b8;
+    font-weight: 500;
+  }
+
+  .subject-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 10rpx;
-    margin-top: 14rpx;
+    justify-content: center;
+    gap: 8rpx;
+    margin-top: 16rpx;
   }
 
-  .tag-row text {
-    padding: 6rpx 12rpx;
-    border-radius: 999rpx;
-    color: #0f766e;
-    background: #ecfdf5;
+  .subject-row text {
+    padding: 5rpx 12rpx;
+    border-radius: 7rpx;
+    color: #2563eb;
+    background: #eff6ff;
     font-size: 21rpx;
   }
 
+  .teacher-foot {
+    justify-content: space-between;
+    margin-top: 22rpx;
+    color: #94a3b8;
+    font-size: 24rpx;
+  }
+
   .price {
-    color: #f97316;
-    font-size: 26rpx;
+    color: #ff5a00;
+    font-weight: 900;
+  }
+
+  .request-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18rpx;
+    padding: 0 30rpx;
+  }
+
+  .request-list.compact {
+    padding-bottom: 24rpx;
+  }
+
+  .request-card {
+    padding: 24rpx;
+  }
+
+  .request-top {
+    justify-content: space-between;
+    gap: 16rpx;
+  }
+
+  .request-title {
+    display: flex;
+    align-items: center;
+    gap: 8rpx;
+    color: #111827;
+    font-size: 29rpx;
     font-weight: 800;
-    white-space: nowrap;
+  }
+
+  .urgent {
+    padding: 2rpx 10rpx;
+    border-radius: 8rpx;
+    color: #fff;
+    background: #f97316;
+    font-size: 20rpx;
+  }
+
+  .request-meta,
+  .request-foot {
+    color: #64748b;
+    font-size: 24rpx;
+  }
+
+  .request-meta {
+    margin-top: 12rpx;
+  }
+
+  .request-foot {
+    justify-content: space-between;
+    margin-top: 20rpx;
+    padding-top: 18rpx;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  .mini-user {
+    gap: 8rpx;
+  }
+
+  .mini-avatar {
+    width: 36rpx;
+    height: 36rpx;
+    border-radius: 18rpx;
+    background: #e5e7eb;
   }
 </style>
