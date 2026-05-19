@@ -1,94 +1,183 @@
 <template>
-  <view class="u-page__item" v-if="tabbar?.items?.length > 0">
-    <su-tabbar
-      :value="path"
-      :fixed="true"
-      :placeholder="true"
-      :safeAreaInsetBottom="true"
-      :inactiveColor="tabbar.style.color"
-      :activeColor="tabbar.style.activeColor"
-      :midTabBar="tabbar.mode === 2"
-      :customStyle="tabbarStyle"
-    >
-      <su-tabbar-item
-        v-for="(item, index) in tabbar.items"
-        :key="item.text"
-        :text="item.text"
-        :name="item.url"
-        :badge="item.badge"
-        :dot="item.dot"
-        :badgeStyle="tabbar.badgeStyle"
-        :isCenter="getTabbarCenter(index)"
-        :centerImage="item.iconUrl ? sheep.$url.cdn(item.iconUrl) : ''"
-        @click="sheep.$router.go(item.url)"
+  <view v-if="tabbarItems.length" class="tutor-tabbar-wrap">
+    <view class="tutor-tabbar" :style="tabbarStyle">
+      <button
+        v-for="item in tabbarItems"
+        :key="item.url"
+        class="tabbar-item ss-reset-button"
+        :class="{ active: isActive(item), center: item.center }"
+        @tap="goTab(item)"
       >
-        <template v-if="item.activeIconUrl" v-slot:active-icon>
-          <image class="u-page__item__slot-icon" :src="sheep.$url.cdn(item.activeIconUrl)"></image>
+        <view v-if="item.center" class="center-bubble">
+          <text :class="item.activeIcon || item.icon"></text>
+        </view>
+        <template v-else>
+          <text
+            class="tabbar-icon"
+            :class="isActive(item) ? item.activeIcon || item.icon : item.icon"
+          ></text>
         </template>
-        <template v-if="item.iconUrl" v-slot:inactive-icon>
-          <image class="u-page__item__slot-icon" :src="sheep.$url.cdn(item.iconUrl)"></image>
-        </template>
-      </su-tabbar-item>
-    </su-tabbar>
+        <text class="tabbar-text">{{ item.text }}</text>
+      </button>
+    </view>
+    <view class="tabbar-placeholder"></view>
   </view>
 </template>
 
 <script setup>
-  import { computed, unref } from 'vue';
+  import { computed } from 'vue';
   import sheep from '@/sheep';
-  import SuTabbar from '@/sheep/ui/su-tabbar/su-tabbar.vue';
-
-  const tabbar = computed(() => {
-    return sheep.$store('app').template.basic?.tabbar;
-  });
-
-  const tabbarStyle = computed(() => {
-    const backgroundStyle = tabbar.value.style;
-    if (backgroundStyle.bgType === 'color') {
-      return { background: backgroundStyle.bgColor };
-    }
-    if (backgroundStyle.bgType === 'img')
-      return {
-        background: `url(${sheep.$url.cdn(
-          backgroundStyle.bgImg,
-        )}) no-repeat top center / 100% auto`,
-      };
-  });
-
-  const getTabbarCenter = (index) => {
-    if (unref(tabbar).mode !== 2) return false;
-    return unref(tabbar).items % 2 > 0
-      ? Math.ceil(unref(tabbar).items.length / 2) === index + 1
-      : false;
-  };
 
   const props = defineProps({
-    path: String,
-    default: '',
+    path: {
+      type: String,
+      default: '',
+    },
   });
+
+  const fallbackItems = [
+    {
+      text: '首页',
+      url: '/pages/index/index',
+      icon: 'cicon-home-o',
+      activeIcon: 'cicon-home',
+    },
+    {
+      text: '广场',
+      url: '/pages/index/square',
+      icon: 'cicon-discover-o',
+      activeIcon: 'cicon-discover',
+    },
+    {
+      text: '发布',
+      url: '/pages/index/publish',
+      icon: 'cicon-add',
+      activeIcon: 'cicon-add',
+      center: true,
+    },
+    {
+      text: '消息',
+      url: '/pages/index/message',
+      icon: 'cicon-chat-o',
+      activeIcon: 'cicon-chat',
+    },
+    {
+      text: '我的',
+      url: '/pages/index/user',
+      icon: 'cicon-my-o',
+      activeIcon: 'cicon-my',
+    },
+  ];
+
+  const tabbar = computed(() => sheep.$store('app').template.basic?.tabbar || {});
+
+  const tabbarItems = computed(() => {
+    const items = tabbar.value.items?.length ? tabbar.value.items : fallbackItems;
+    return items.map((item, index) => ({
+      ...fallbackItems[index],
+      ...item,
+      center: item.center || index === 2,
+    }));
+  });
+
+  const activeColor = computed(() => tabbar.value.style?.activeColor || '#2563eb');
+  const inactiveColor = computed(() => tabbar.value.style?.color || '#94a3b8');
+
+  const tabbarStyle = computed(() => ({
+    '--tabbar-active-color': activeColor.value,
+    '--tabbar-inactive-color': inactiveColor.value,
+    background: tabbar.value.style?.bgColor || '#ffffff',
+  }));
+
+  function normalize(url) {
+    return String(url || '').split('?')[0];
+  }
+
+  function isActive(item) {
+    return normalize(item.url) === normalize(props.path);
+  }
+
+  function goTab(item) {
+    if (isActive(item)) {
+      return;
+    }
+    sheep.$router.go(item.url);
+  }
 </script>
 
-<style lang="scss">
-  .u-page {
-    padding: 0;
+<style lang="scss" scoped>
+  .tutor-tabbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 998;
+    height: calc(100rpx + env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    align-items: start;
+    padding: 10rpx 0 env(safe-area-inset-bottom);
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -4rpx 18rpx rgba(15, 23, 42, 0.06);
+    box-sizing: border-box;
+  }
 
-    &__item {
-      &__title {
-        color: var(--textSize);
-        background-color: #fff;
-        padding: 15px;
-        font-size: 15px;
+  .tabbar-placeholder {
+    height: calc(100rpx + env(safe-area-inset-bottom));
+  }
 
-        &__slot-title {
-          color: var(--textSize);
-          font-size: 14px;
-        }
-      }
+  .tabbar-item {
+    min-width: 0;
+    height: 90rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4rpx;
+    color: var(--tabbar-inactive-color);
+    font-size: 22rpx;
+    line-height: 1;
+  }
 
-      &__slot-icon {
-        width: 25px;
-        height: 25px;
-      }
-    }
+  .tabbar-item.active {
+    color: var(--tabbar-active-color);
+  }
+
+  .tabbar-icon {
+    height: 46rpx;
+    line-height: 46rpx;
+    font-size: 44rpx;
+  }
+
+  .tabbar-text {
+    color: currentColor;
+    font-size: 22rpx;
+    line-height: 28rpx;
+  }
+
+  .tabbar-item.center {
+    position: relative;
+    gap: 0;
+  }
+
+  .center-bubble {
+    width: 92rpx;
+    height: 92rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: -42rpx;
+    margin-bottom: 4rpx;
+    border-radius: 50%;
+    color: #fff;
+    background: var(--tabbar-active-color);
+    border: 8rpx solid #fff;
+    box-shadow: 0 12rpx 28rpx rgba(37, 99, 235, 0.35);
+    box-sizing: border-box;
+  }
+
+  .center-bubble text {
+    font-size: 50rpx;
+    line-height: 50rpx;
   }
 </style>

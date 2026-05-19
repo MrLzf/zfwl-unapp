@@ -2,7 +2,18 @@
 <template>
   <view class="u-tabbar-item" :style="[addStyle(customStyle)]" @click="clickHandler">
     <view v-if="isCenter" class="tabbar-center-item">
-      <image class="center-image" :src="centerImage" mode="aspectFill"></image>
+      <view class="center-bubble">
+        <image v-if="centerImage" class="center-image" :src="centerImage" mode="aspectFill"></image>
+        <text v-else class="center-icon" :class="activeIcon || icon"></text>
+      </view>
+      <text
+        class="center-text"
+        :style="{
+          color: isActive ? parentData.activeColor : parentData.inactiveColor,
+        }"
+      >
+        {{ text }}
+      </text>
     </view>
     <template v-else>
       <view class="u-tabbar-item__icon">
@@ -13,12 +24,13 @@
           :customStyle="badgeStyle"
           :isDot="dot"
         >
-          <image
-            v-if="icon"
-            :name="icon"
+          <text
+            v-if="displayIcon"
+            class="u-tabbar-item__icon-text"
+            :class="displayIcon"
             :color="isActive ? parentData.activeColor : parentData.inactiveColor"
-            :size="20"
-          ></image>
+            :style="{ color: isActive ? parentData.activeColor : parentData.inactiveColor }"
+          ></text>
           <block v-else>
             <slot v-if="isActive" name="active-icon" />
             <slot v-else name="inactive-icon" />
@@ -83,7 +95,11 @@
       },
       // uView内置图标或者绝对路径的图片
       icon: {
-        icon: String,
+        type: String,
+        default: '',
+      },
+      activeIcon: {
+        type: String,
         default: '',
       },
       // 右上角的角标提示信息
@@ -104,7 +120,7 @@
       // 控制徽标的位置，对象或者字符串形式，可以设置top和right属性
       badgeStyle: {
         type: Object,
-        default: ()=>{},
+        default: () => {},
       },
       isCenter: {
         type: Boolean,
@@ -113,6 +129,11 @@
       centerImage: {
         type: String,
         default: '',
+      },
+    },
+    computed: {
+      displayIcon() {
+        return this.isActive ? this.activeIcon || this.icon : this.icon;
       },
     },
     data() {
@@ -187,20 +208,41 @@
 
 <style lang="scss" scoped>
   .tabbar-center-item {
-    height: 40px;
-    width: 40px;
+    width: 76px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    background-color: rebeccapurple;
-    transform: scale(1.3) translateY(-6px);
+    transform: translateY(-12px);
     position: absolute;
     z-index: 2;
+
+    .center-bubble {
+      height: 56px;
+      width: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background-color: #2563eb;
+      border: 5px solid #fff;
+      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
+      box-sizing: border-box;
+    }
 
     .center-image {
       width: 25px;
       height: 25px;
+    }
+
+    .center-icon {
+      color: #fff;
+      font-size: 30px;
+    }
+
+    .center-text {
+      margin-top: 2px;
+      font-size: 12px;
     }
   }
 
@@ -218,6 +260,11 @@
       position: relative;
       width: 150rpx;
       justify-content: center;
+    }
+
+    &__icon-text {
+      font-size: 24px;
+      line-height: 24px;
     }
 
     &__text {

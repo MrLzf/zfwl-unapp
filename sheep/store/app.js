@@ -8,10 +8,10 @@ import sys from './sys';
 import { baseUrl, h5Url } from '@/sheep/config';
 
 const defaultTabbar = {
-  mode: 1,
+  mode: 2,
   style: {
-    color: '#6b7280',
-    activeColor: '#0f766e',
+    color: '#94a3b8',
+    activeColor: '#2563eb',
     bgType: 'color',
     bgColor: '#ffffff',
   },
@@ -20,32 +20,33 @@ const defaultTabbar = {
     {
       text: '首页',
       url: '/pages/index/index',
-      iconUrl: '',
-      activeIconUrl: '',
+      icon: 'cicon-home-o',
+      activeIcon: 'cicon-home',
     },
     {
       text: '广场',
       url: '/pages/index/square',
-      iconUrl: '',
-      activeIconUrl: '',
+      icon: 'cicon-discover-o',
+      activeIcon: 'cicon-discover',
     },
     {
       text: '发布',
       url: '/pages/index/publish',
-      iconUrl: '',
-      activeIconUrl: '',
+      icon: 'cicon-add',
+      activeIcon: 'cicon-add',
+      center: true,
     },
     {
       text: '消息',
       url: '/pages/index/message',
-      iconUrl: '',
-      activeIconUrl: '',
+      icon: 'cicon-chat-o',
+      activeIcon: 'cicon-chat',
     },
     {
       text: '我的',
       url: '/pages/index/user',
-      iconUrl: '',
-      activeIconUrl: '',
+      icon: 'cicon-my-o',
+      activeIcon: 'cicon-my',
     },
   ],
 };
