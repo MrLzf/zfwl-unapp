@@ -96,7 +96,7 @@ const AuthUtil = {
     });
   },
   // 微信小程序的一键登录
-  weixinMiniAppLogin: (phoneCode, loginCode, state) => {
+  weixinMiniAppLogin: (phoneCode, loginCode, state, extra = {}) => {
     return request({
       url: '/member/auth/weixin-mini-app-login',
       method: 'POST',
@@ -104,6 +104,7 @@ const AuthUtil = {
         phoneCode,
         loginCode,
         state,
+        ...extra,
       },
       custom: {
         showSuccess: true,

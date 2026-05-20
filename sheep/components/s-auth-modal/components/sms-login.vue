@@ -214,15 +214,28 @@
     }
     state.submitting = true;
     try {
+      const city = await resolveCity();
+      if (!city?.code) {
+        sheep.$helper.toast('请先选择服务城市');
+        return;
+      }
+      const tutorRole = state.model.role === 'parent' ? 1 : 2;
       const loginRes = await AuthUtil.smsLogin({
         mobile: state.model.mobile,
         code: state.model.code,
+        tutorRole,
+        tutorCityCode: city.code,
       });
       if (loginRes.code !== 0) {
         return;
       }
+      if (loginRes.data?.tutorProfile) {
+        uni.setStorageSync('tutor_profile', loginRes.data.tutorProfile);
+      }
       await syncUserName();
-      await initTutorProfile();
+      if (!loginRes.data?.tutorProfile) {
+        await initTutorProfile();
+      }
       closeAuthModal();
     } finally {
       state.submitting = false;
