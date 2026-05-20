@@ -45,6 +45,13 @@
       </view>
       <view
         class="menu-item ss-flex ss-row-between ss-col-center"
+        @tap="go('/pages/tutor/parent-profile/index')"
+      >
+        <text>家长资料</text>
+        <text class="cicon-forward"></text>
+      </view>
+      <view
+        class="menu-item ss-flex ss-row-between ss-col-center"
         @tap="go('/pages/tutor/certification/index')"
       >
         <text>教师认证</text>

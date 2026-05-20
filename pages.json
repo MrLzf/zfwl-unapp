@@ -101,6 +101,17 @@
           }
         },
         {
+          "path": "parent-profile/index",
+          "style": {
+            "navigationBarTitleText": "家长资料"
+          },
+          "meta": {
+            "auth": true,
+            "title": "家长资料",
+            "group": "家教"
+          }
+        },
+        {
           "path": "detail/index",
           "style": {
             "navigationBarTitleText": "需求详情"
