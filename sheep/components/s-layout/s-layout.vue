@@ -59,6 +59,7 @@
   import { computed, onMounted } from 'vue';
   import sheep from '@/sheep';
   import { isEmpty } from 'lodash-es';
+  import { onShow } from '@dcloudio/uni-app';
   // #ifdef MP-WEIXIN
   import { onShareAppMessage, onShareTimeline } from '@dcloudio/uni-app';
   // #endif
@@ -218,7 +219,22 @@
     if (!isEmpty(shareInfo.value)) {
       sheep.$platform.share.updateShareInfo(shareInfo.value);
     }
+    hideNativeTabbar();
   });
+
+  onShow(() => {
+    hideNativeTabbar();
+  });
+
+  function hideNativeTabbar() {
+    if (props.tabbar === '') {
+      return;
+    }
+    uni.hideTabBar({
+      animation: false,
+      fail: () => {},
+    });
+  }
 </script>
 
 <style lang="scss" scoped>
