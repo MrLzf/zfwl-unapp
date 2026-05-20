@@ -4,6 +4,7 @@ import { clone } from 'lodash-es';
 import app from './app';
 import { showAuthModal } from '@/sheep/hooks/useModal';
 import UserApi from '@/sheep/api/member/user';
+import TutorProfileApi from '@/sheep/api/tutor/profile';
 
 const defaultUserInfo = {
   avatar: '',
@@ -17,6 +18,7 @@ const user = defineStore({
   id: 'user',
   state: () => ({
     userInfo: clone(defaultUserInfo),
+    tutorProfile: uni.getStorageSync('tutor_profile') || null,
     isLogin: !!uni.getStorageSync('token'),
     lastUpdateTime: 0,
   }),
@@ -29,6 +31,37 @@ const user = defineStore({
       }
       this.userInfo = data;
       return data;
+    },
+
+    setTutorProfile(profile = null) {
+      this.tutorProfile = profile || null;
+      if (!profile) {
+        uni.removeStorageSync('tutor_profile');
+        return this.tutorProfile;
+      }
+      uni.setStorageSync('tutor_profile', profile);
+      if (profile.cityCode) {
+        uni.setStorageSync('tutor_city', {
+          id: profile.cityId,
+          code: profile.cityCode,
+          name: profile.cityName,
+        });
+      }
+      return this.tutorProfile;
+    },
+
+    async getTutorProfile({ silent = true } = {}) {
+      if (!this.isLogin) {
+        this.setTutorProfile(null);
+        return null;
+      }
+      const result = silent
+        ? await TutorProfileApi.getProfileSilent()
+        : await TutorProfileApi.getProfile();
+      if (result?.code === 0) {
+        this.setTutorProfile(result.data || null);
+      }
+      return this.tutorProfile;
     },
 
     setToken(token = '', refreshToken = '') {
@@ -57,12 +90,14 @@ const user = defineStore({
       this.lastUpdateTime = nowTime;
 
       await this.getInfo();
+      await this.getTutorProfile();
       return this.userInfo;
     },
 
     resetUserData() {
       this.setToken();
       this.userInfo = clone(defaultUserInfo);
+      this.setTutorProfile(null);
     },
 
     async loginAfter() {

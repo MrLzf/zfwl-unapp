@@ -177,9 +177,10 @@
   }
 
   async function initTutorProfile() {
+    const userStore = sheep.$store('user');
     const profileRes = await TutorProfileApi.getProfileSilent();
     if (profileRes.code === 0 && profileRes.data?.role) {
-      uni.setStorageSync('tutor_profile', profileRes.data);
+      userStore.setTutorProfile(profileRes.data);
       return;
     }
 
@@ -195,7 +196,7 @@
       cityCode: city.code,
     });
     if (initRes.code === 0) {
-      uni.setStorageSync('tutor_profile', initRes.data);
+      userStore.setTutorProfile(initRes.data);
     }
   }
 
@@ -230,7 +231,7 @@
         return;
       }
       if (loginRes.data?.tutorProfile) {
-        uni.setStorageSync('tutor_profile', loginRes.data.tutorProfile);
+        sheep.$store('user').setTutorProfile(loginRes.data.tutorProfile);
       }
       await syncUserName();
       if (!loginRes.data?.tutorProfile) {

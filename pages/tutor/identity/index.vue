@@ -65,6 +65,7 @@
 <script setup>
   import { computed, reactive } from 'vue';
   import { onShow } from '@dcloudio/uni-app';
+  import sheep from '@/sheep';
   import TutorProfileApi from '@/sheep/api/tutor/profile';
 
   const roles = [
@@ -87,6 +88,7 @@
       role: null,
     },
   });
+  const userStore = sheep.$store('user');
 
   const locationText = computed(() => {
     if (!state.profile?.longitude || !state.profile?.latitude) {
@@ -100,10 +102,7 @@
   }
 
   async function loadProfile() {
-    const { code, data } = await TutorProfileApi.getProfile();
-    if (code !== 0) {
-      return;
-    }
+    const data = await userStore.getTutorProfile({ silent: false });
     state.profile = data || null;
     if (data) {
       state.form.role = data.role;
@@ -112,7 +111,6 @@
         code: data.cityCode,
         name: data.cityName,
       };
-      uni.setStorageSync('tutor_profile', data);
     }
   }
 
@@ -152,7 +150,10 @@
       return;
     }
     state.profile = data;
-    uni.setStorageSync('tutor_profile', data);
+    userStore.setTutorProfile(data);
+    uni.switchTab({
+      url: '/pages/index/index',
+    });
   }
 
   function updateLocation() {
@@ -172,7 +173,7 @@
           return;
         }
         state.profile = data;
-        uni.setStorageSync('tutor_profile', data);
+        userStore.setTutorProfile(data);
       },
       fail: () => {
         uni.showToast({

@@ -168,7 +168,6 @@
   import { onShow, onPullDownRefresh } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
   import { showAuthModal } from '@/sheep/hooks/useModal';
-  import TutorProfileApi from '@/sheep/api/tutor/profile';
   import { tutorRequests, tutorTeachers } from '@/sheep/api/tutor/mock-data';
 
   const state = reactive({
@@ -267,23 +266,12 @@
 
   async function loadProfile() {
     if (!userStore.isLogin) {
-      state.profile = uni.getStorageSync('tutor_profile') || null;
+      state.profile = null;
       return;
     }
-    const { code, data } = await TutorProfileApi.getProfileSilent();
-    if (code !== 0) {
-      state.profile = uni.getStorageSync('tutor_profile') || null;
-      return;
-    }
-    state.profile = data || null;
-    if (data?.cityCode) {
-      state.city = {
-        id: data.cityId,
-        code: data.cityCode,
-        name: data.cityName,
-      };
-      uni.setStorageSync('tutor_city', state.city);
-      uni.setStorageSync('tutor_profile', data);
+    state.profile = await userStore.getTutorProfile();
+    if (state.profile?.cityCode) {
+      state.city = uni.getStorageSync('tutor_city') || state.city;
     }
   }
 

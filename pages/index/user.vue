@@ -121,20 +121,15 @@
 </template>
 
 <script setup>
-  import { computed, reactive, toRefs } from 'vue';
+  import { computed } from 'vue';
   import { onShow, onPullDownRefresh } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
   import { showAuthModal } from '@/sheep/hooks/useModal';
-  import TutorProfileApi from '@/sheep/api/tutor/profile';
 
-  const state = reactive({
-    profile: null,
-  });
-
-  const { profile } = toRefs(state);
   const userStore = sheep.$store('user');
   const isLogin = computed(() => userStore.isLogin);
   const userInfo = computed(() => userStore.userInfo);
+  const profile = computed(() => userStore.tutorProfile);
 
   function showAuth() {
     showAuthModal();
@@ -146,13 +141,10 @@
 
   async function loadProfile() {
     if (!userStore.isLogin) {
-      state.profile = null;
+      userStore.setTutorProfile(null);
       return;
     }
-    const { code, data } = await TutorProfileApi.getProfile();
-    if (code === 0) {
-      state.profile = data || null;
-    }
+    await userStore.getTutorProfile({ silent: false });
   }
 
   async function refresh() {
@@ -162,7 +154,6 @@
 
   async function logout() {
     await userStore.logout();
-    state.profile = null;
   }
 
   onShow(refresh);
