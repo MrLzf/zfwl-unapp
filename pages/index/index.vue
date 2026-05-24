@@ -5,7 +5,7 @@
         <view class="hero-top">
           <view class="city-pill" @tap="goCity">
             <text class="cicon-location-on"></text>
-            <text>{{ city.name || '北京市' }}</text>
+            <text>{{ city.name || '选择城市' }}</text>
             <text class="cicon-drop-down"></text>
           </view>
           <button class="message-btn ss-reset-button" @tap="goMessages">
@@ -20,6 +20,14 @@
       </view>
 
       <view class="content">
+        <view v-if="showSetupCard" class="setup-card">
+          <view>
+            <view class="setup-title">先选择身份，推荐会更准</view>
+            <view class="setup-desc">家长看优质老师，老师看同城需求。</view>
+          </view>
+          <button class="setup-btn ss-reset-button" @tap="goIdentity">去选择</button>
+        </view>
+
         <view class="quick-actions">
           <button
             v-for="action in quickActions"
@@ -45,7 +53,7 @@
           >
             <swiper-item v-for="banner in banners" :key="banner.id">
               <view class="banner-card" :class="banner.color" @tap="handleBanner(banner)">
-                <view>
+                <view class="banner-copy">
                   <view class="banner-tag">
                     <text :class="banner.icon"></text>
                     <text>{{ banner.tag }}</text>
@@ -80,20 +88,25 @@
 
         <view v-if="isTeacher" class="request-list">
           <view
-            v-for="item in hotRequests"
+            v-for="(item, index) in hotRequests"
             :key="item.id"
             class="request-card"
-            @tap="goDetail(item)"
+            :class="{ locked: isLocked(index) }"
+            @tap="goDetail(item, index)"
           >
+            <view class="lock-mask" v-if="isLocked(index)">
+              <text class="cicon-lock"></text>
+              <text>登录后查看更多</text>
+            </view>
             <view class="request-top">
-              <view>
+              <view class="request-main">
                 <view class="request-title">
                   <text v-if="item.urgent" class="urgent">急</text>
                   <text>{{ item.title }}</text>
                 </view>
-                <view class="request-meta"
-                  >{{ item.grade }} · {{ item.subject }} · {{ item.frequency }}</view
-                >
+                <view class="request-meta">
+                  {{ item.grade }} · {{ item.subject }} · {{ item.frequency }}
+                </view>
               </view>
               <view class="price">¥{{ item.budget }}/时</view>
             </view>
@@ -102,31 +115,36 @@
                 <image class="mini-avatar" :src="item.avatar" mode="aspectFill" />
                 <text>{{ item.parentName || item.contactName }}</text>
               </view>
-              <text>{{ item.distance }}km · {{ modeText(item.mode) }}</text>
+              <text>{{ formatDistance(item.distance) }} · {{ modeText(item.mode) }}</text>
             </view>
           </view>
         </view>
 
         <view v-else class="teacher-grid">
           <view
-            v-for="item in topTeachers"
+            v-for="(item, index) in topTeachers"
             :key="item.id"
             class="teacher-card"
-            @tap="goDetail(item)"
+            :class="{ locked: isLocked(index) }"
+            @tap="goDetail(item, index)"
           >
+            <view class="lock-mask" v-if="isLocked(index)">
+              <text class="cicon-lock"></text>
+              <text>登录后查看更多</text>
+            </view>
             <image class="teacher-avatar" :src="item.avatar" mode="aspectFill" />
             <view class="teacher-name">{{ item.name }}</view>
             <view class="teacher-edu">{{ item.education }}</view>
             <view class="rating-row">
               <text class="cicon-star"></text>
-              <text>{{ item.score || item.rating || '4.9' }}</text>
-              <text class="review-count">({{ item.reviewCount || item.reviews || 128 }})</text>
+              <text>{{ item.score || item.rating || '5.0' }}</text>
+              <text class="review-count">({{ item.reviewCount || item.reviews || 0 }})</text>
             </view>
             <view class="subject-row">
               <text v-for="subject in item.subjects.slice(0, 2)" :key="subject">{{ subject }}</text>
             </view>
             <view class="teacher-foot">
-              <text>{{ item.distance }}km</text>
+              <text>{{ formatDistance(item.distance) }}</text>
               <text class="price">¥{{ item.price }}/时</text>
             </view>
           </view>
@@ -142,17 +160,17 @@
 
         <view v-if="!isTeacher" class="request-list compact">
           <view
-            v-for="item in hotRequests.slice(0, 3)"
+            v-for="(item, index) in hotRequests.slice(0, 3)"
             :key="item.id"
             class="request-card"
-            @tap="goDetail(item)"
+            @tap="goDetail(item, index)"
           >
             <view class="request-top">
-              <view>
+              <view class="request-main">
                 <view class="request-title">{{ item.title }}</view>
-                <view class="request-meta"
-                  >{{ item.grade }} · {{ item.subject }} · {{ item.frequency }}</view
-                >
+                <view class="request-meta">
+                  {{ item.grade }} · {{ item.subject }} · {{ item.frequency }}
+                </view>
               </view>
               <view class="price">¥{{ item.budget }}/时</view>
             </view>
@@ -168,20 +186,33 @@
   import { onShow, onPullDownRefresh } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
   import { showAuthModal } from '@/sheep/hooks/useModal';
+  import TutorMarketApi from '@/sheep/api/tutor/market';
   import { tutorRequests, tutorTeachers } from '@/sheep/api/tutor/mock-data';
+  import {
+    TUTOR_ROLE,
+    formatDistance,
+    getPageList,
+    modeText,
+    normalizeDemand,
+    normalizeResume,
+  } from '@/sheep/api/tutor/utils';
 
   const state = reactive({
     city: {},
     profile: null,
     currentBanner: 0,
+    teachers: [],
+    requests: [],
   });
 
   const { city, profile, currentBanner } = toRefs(state);
   const userStore = sheep.$store('user');
 
   const isTeacher = computed(() => {
-    return state.profile?.role === 2 || state.profile?.roleName === '教师';
+    return state.profile?.role === TUTOR_ROLE.TEACHER || state.profile?.roleName === '教师';
   });
+
+  const showSetupCard = computed(() => userStore.isLogin && !state.profile?.role);
 
   const searchPlaceholder = computed(() =>
     isTeacher.value ? '搜索家长需求、科目或年级' : '搜索科目、老师或年级',
@@ -214,7 +245,7 @@
       icon: 'cicon-check-round',
       color: 'purple',
       path: '/pages/tutor/certification/index',
-      auth: isTeacher.value,
+      auth: true,
     },
   ]);
 
@@ -257,11 +288,15 @@
       : { title: '优质教师', icon: 'cicon-check-round' },
   );
 
-  const topTeachers = computed(() => tutorTeachers.slice(0, 4));
-  const hotRequests = computed(() => tutorRequests.slice(0, 4));
+  const topTeachers = computed(() =>
+    (state.teachers.length ? state.teachers : tutorTeachers).slice(0, 6),
+  );
+  const hotRequests = computed(() =>
+    (state.requests.length ? state.requests : tutorRequests).slice(0, 6),
+  );
 
   function loadCity() {
-    state.city = uni.getStorageSync('tutor_city') || {};
+    state.city = uni.getStorageSync('tutor_city') || uni.getStorageSync('tutor_located_city') || {};
   }
 
   async function loadProfile() {
@@ -271,8 +306,35 @@
     }
     state.profile = await userStore.getTutorProfile();
     if (state.profile?.cityCode) {
-      state.city = uni.getStorageSync('tutor_city') || state.city;
+      state.city = {
+        id: state.profile.cityId,
+        code: state.profile.cityCode,
+        name: state.profile.cityName,
+      };
     }
+  }
+
+  async function loadRecommendations() {
+    const location = uni.getStorageSync('tutor_location') || {};
+    const params = {
+      pageNo: 1,
+      pageSize: 6,
+      cityCode: state.city?.code,
+      longitude: location.longitude,
+      latitude: location.latitude,
+    };
+    const [resumeResult, demandResult] = await Promise.all([
+      TutorMarketApi.getResumePage(params),
+      TutorMarketApi.getDemandPage(params),
+    ]);
+    state.teachers =
+      resumeResult?.code === 0 && getPageList(resumeResult.data).length
+        ? getPageList(resumeResult.data).map(normalizeResume)
+        : tutorTeachers;
+    state.requests =
+      demandResult?.code === 0 && getPageList(demandResult.data).length
+        ? getPageList(demandResult.data).map(normalizeDemand)
+        : tutorRequests;
   }
 
   function ensureAuth(callback) {
@@ -283,12 +345,8 @@
     showAuthModal();
   }
 
-  function modeText(mode) {
-    return {
-      offline: '上门',
-      online: '在线',
-      both: '上门/在线',
-    }[mode];
+  function isLocked(index) {
+    return !userStore.isLogin && index >= 5;
   }
 
   function handleAction(action) {
@@ -326,6 +384,10 @@
     uni.navigateTo({ url: '/pages/tutor/city/index' });
   }
 
+  function goIdentity() {
+    uni.navigateTo({ url: '/pages/tutor/identity/index' });
+  }
+
   function goSquare() {
     uni.switchTab({ url: '/pages/index/square' });
   }
@@ -343,7 +405,11 @@
     uni.switchTab({ url: '/pages/index/publish' });
   }
 
-  function goDetail(item) {
+  function goDetail(item, index = 0) {
+    if (isLocked(index)) {
+      showAuthModal();
+      return;
+    }
     uni.navigateTo({
       url: `/pages/tutor/detail/index?type=${item.type}&id=${item.id}`,
     });
@@ -352,6 +418,7 @@
   async function refresh() {
     loadCity();
     await loadProfile();
+    await loadRecommendations();
   }
 
   onShow(refresh);
@@ -441,6 +508,43 @@
     padding-bottom: 24rpx;
   }
 
+  .setup-card {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20rpx;
+    margin: 0 30rpx 20rpx;
+    padding: 24rpx;
+    border-radius: 20rpx;
+    color: #0f172a;
+    background: #fff;
+    box-shadow: 0 14rpx 28rpx rgba(15, 23, 42, 0.1);
+  }
+
+  .setup-title {
+    font-size: 29rpx;
+    font-weight: 900;
+  }
+
+  .setup-desc {
+    margin-top: 8rpx;
+    color: #64748b;
+    font-size: 24rpx;
+  }
+
+  .setup-btn {
+    flex-shrink: 0;
+    height: 62rpx;
+    padding: 0 24rpx;
+    border-radius: 999rpx;
+    color: #fff;
+    background: #2563eb;
+    font-size: 24rpx;
+    font-weight: 800;
+  }
+
   .quick-actions {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -511,6 +615,10 @@
     padding: 44rpx;
     border-radius: 24rpx;
     color: #fff;
+  }
+
+  .banner-copy {
+    min-width: 0;
   }
 
   .banner-card.warm {
@@ -621,6 +729,8 @@
 
   .teacher-card,
   .request-card {
+    position: relative;
+    overflow: hidden;
     border-radius: 18rpx;
     background: #fff;
     border: 1px solid #eef2f7;
@@ -631,6 +741,30 @@
     min-width: 0;
     padding: 30rpx 22rpx 24rpx;
     text-align: center;
+  }
+
+  .locked > view:not(.lock-mask),
+  .locked > image {
+    filter: blur(4rpx);
+  }
+
+  .lock-mask {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8rpx;
+    color: #fff;
+    background: rgba(15, 23, 42, 0.52);
+    font-size: 24rpx;
+    font-weight: 800;
+  }
+
+  .lock-mask text:first-child {
+    font-size: 42rpx;
   }
 
   .teacher-avatar {
@@ -684,6 +818,7 @@
     flex-wrap: wrap;
     justify-content: center;
     gap: 8rpx;
+    min-height: 38rpx;
     margin-top: 16rpx;
   }
 
@@ -703,6 +838,7 @@
   }
 
   .price {
+    flex-shrink: 0;
     color: #ff5a00;
     font-weight: 900;
   }
@@ -727,6 +863,11 @@
     gap: 16rpx;
   }
 
+  .request-main {
+    min-width: 0;
+    flex: 1;
+  }
+
   .request-title {
     display: flex;
     align-items: center;
@@ -736,7 +877,14 @@
     font-weight: 800;
   }
 
+  .request-title text:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .urgent {
+    flex-shrink: 0;
     padding: 2rpx 10rpx;
     border-radius: 8rpx;
     color: #fff;
@@ -756,12 +904,14 @@
 
   .request-foot {
     justify-content: space-between;
+    gap: 12rpx;
     margin-top: 20rpx;
     padding-top: 18rpx;
     border-top: 1px solid #f1f5f9;
   }
 
   .mini-user {
+    min-width: 0;
     gap: 8rpx;
   }
 

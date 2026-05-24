@@ -6,9 +6,34 @@
         <input
           v-model="state.keyword"
           class="search-input"
-          placeholder="搜索城市"
+          placeholder="搜索城市名字/拼音"
           confirm-type="search"
         />
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">当前定位城市</view>
+      <view class="location-card">
+        <view class="location-main">
+          <view class="city-name">
+            {{ state.locatedCity?.name || state.currentCity?.name || '暂未定位' }}
+          </view>
+          <view class="city-meta">
+            {{
+              state.locatedCity
+                ? `${state.locatedCity.province || ''} · ${state.locatedCity.code}`
+                : '定位失败时可手动选择服务城市'
+            }}
+          </view>
+        </view>
+        <button class="locate-btn ss-reset-button" :disabled="state.locating" @tap="locateCity">
+          <text class="cicon-location-on"></text>
+          <text>{{ state.locating ? '定位中' : '重新定位' }}</text>
+        </button>
+      </view>
+      <view v-if="state.currentCity?.name" class="selected-tip">
+        当前选择：{{ state.currentCity.name }}
       </view>
     </view>
 
@@ -18,8 +43,8 @@
         <button
           v-for="city in hotCities"
           :key="city.code"
-          class="city-chip"
-          :class="{ disabled: !city.opened }"
+          class="city-chip ss-reset-button"
+          :class="{ disabled: !city.opened, selected: state.currentCity?.code === city.code }"
           @tap="selectCity(city)"
         >
           {{ city.name }}
@@ -29,19 +54,23 @@
 
     <view class="section">
       <view class="section-title">全部城市</view>
-      <view v-if="filteredCities.length" class="city-list">
-        <view
-          v-for="city in filteredCities"
-          :key="city.code"
-          class="city-row ss-flex ss-row-between ss-col-center"
-          @tap="selectCity(city)"
-        >
-          <view>
-            <view class="city-name">{{ city.name }}</view>
-            <view class="city-meta">{{ city.province }} · {{ city.code }}</view>
+      <view v-if="groupedCities.length" class="city-list">
+        <view v-for="group in groupedCities" :key="group.letter" class="city-group">
+          <view class="letter-row">{{ group.letter }}</view>
+          <view
+            v-for="city in group.cities"
+            :key="city.code"
+            class="city-row ss-flex ss-row-between ss-col-center"
+            :class="{ selected: state.currentCity?.code === city.code }"
+            @tap="selectCity(city)"
+          >
+            <view>
+              <view class="city-name">{{ city.name }}</view>
+              <view class="city-meta">{{ city.province }} · {{ city.pinyin || city.code }}</view>
+            </view>
+            <text v-if="city.opened" class="status open">已开通</text>
+            <text v-else class="status closed">即将开放</text>
           </view>
-          <text v-if="city.opened" class="status open">已开通</text>
-          <text v-else class="status closed">即将开放</text>
         </view>
       </view>
       <s-empty v-else text="暂无城市" icon="/static/data-empty.png" />
@@ -53,34 +82,80 @@
   import { computed, reactive } from 'vue';
   import { onLoad } from '@dcloudio/uni-app';
   import TutorCityApi from '@/sheep/api/tutor/city';
+  import { fallbackTutorCities, nearestCityByLocation } from '@/sheep/api/tutor/utils';
 
   const state = reactive({
     keyword: '',
     cities: [],
+    currentCity: null,
+    locatedCity: null,
+    locating: false,
   });
 
   const hotCities = computed(() => state.cities.filter((city) => city.hot));
 
   const filteredCities = computed(() => {
     const keyword = state.keyword.trim().toLowerCase();
+    const cities = [...state.cities].sort((a, b) => (a.sort || 0) - (b.sort || 0));
     if (!keyword) {
-      return state.cities;
+      return cities;
     }
-    return state.cities.filter((city) => {
+    return cities.filter((city) => {
       return (
-        city.name.toLowerCase().includes(keyword) ||
-        city.code.toLowerCase().includes(keyword) ||
-        city.pinyin.toLowerCase().includes(keyword)
+        String(city.name || '')
+          .toLowerCase()
+          .includes(keyword) ||
+        String(city.code || '')
+          .toLowerCase()
+          .includes(keyword) ||
+        String(city.pinyin || '')
+          .toLowerCase()
+          .includes(keyword)
       );
     });
   });
 
+  const groupedCities = computed(() => {
+    const map = filteredCities.value.reduce((result, city) => {
+      const letter = String(city.pinyin || city.name || '#')
+        .slice(0, 1)
+        .toUpperCase();
+      const key = /^[A-Z]$/.test(letter) ? letter : '#';
+      if (!result[key]) {
+        result[key] = [];
+      }
+      result[key].push(city);
+      return result;
+    }, {});
+    return Object.keys(map)
+      .sort((a, b) => (a === '#' ? 1 : b === '#' ? -1 : a.localeCompare(b)))
+      .map((letter) => ({ letter, cities: map[letter] }));
+  });
+
+  function normalizeCities(cities = []) {
+    return cities.map((city) => {
+      const fallback = fallbackTutorCities.find((item) => item.code === city.code) || {};
+      return {
+        ...fallback,
+        ...city,
+        opened: city.opened !== false,
+        hot: Boolean(city.hot),
+      };
+    });
+  }
+
   async function getCityList() {
-    const { code, data } = await TutorCityApi.getCityList();
-    if (code !== 0) {
+    const result = await TutorCityApi.getCityList();
+    if (result?.code === 0 && Array.isArray(result.data) && result.data.length) {
+      state.cities = normalizeCities(result.data);
       return;
     }
-    state.cities = data || [];
+    state.cities = fallbackTutorCities;
+  }
+
+  function loadCurrentCity() {
+    state.currentCity = uni.getStorageSync('tutor_city') || null;
+    state.locatedCity = uni.getStorageSync('tutor_located_city') || null;
   }
 
   function selectCity(city) {
@@ -91,7 +166,17 @@
       });
       return;
     }
-    uni.setStorageSync('tutor_city', city);
+    const selected = {
+      id: city.id,
+      code: city.code,
+      name: city.name,
+      pinyin: city.pinyin,
+      province: city.province,
+      opened: city.opened,
+      hot: city.hot,
+    };
+    state.currentCity = selected;
+    uni.setStorageSync('tutor_city', selected);
     uni.showToast({
       title: `已选择${city.name}`,
       icon: 'none',
@@ -101,15 +186,55 @@
     }, 300);
   }
 
-  onLoad(() => {
-    getCityList();
+  function locateCity() {
+    state.locating = true;
+    uni.getLocation({
+      type: 'gcj02',
+      success: (res) => {
+        const matched =
+          nearestCityByLocation(state.cities, res.longitude, res.latitude) ||
+          state.cities.find((city) => city.opened);
+        if (!matched) {
+          uni.showToast({ title: '暂未匹配到开通城市', icon: 'none' });
+          return;
+        }
+        state.locatedCity = matched;
+        uni.setStorageSync('tutor_located_city', matched);
+        uni.setStorageSync('tutor_location', {
+          longitude: res.longitude,
+          latitude: res.latitude,
+        });
+        if (!state.currentCity?.code && matched.opened) {
+          state.currentCity = matched;
+          uni.setStorageSync('tutor_city', matched);
+        }
+        uni.showToast({ title: `定位到${matched.name}`, icon: 'none' });
+      },
+      fail: () => {
+        uni.showToast({
+          title: '定位授权失败，请手动选择城市',
+          icon: 'none',
+        });
+      },
+      complete: () => {
+        state.locating = false;
+      },
+    });
+  }
+
+  onLoad(async () => {
+    loadCurrentCity();
+    await getCityList();
+    if (!state.currentCity?.code && !state.locatedCity?.code) {
+      locateCity();
+    }
   });
 </script>
 
 <style lang="scss" scoped>
   .city-page {
-    background: #f6f7fb;
     min-height: 100vh;
+    background: #f6f7fb;
   }
 
   .search-wrap {
@@ -119,7 +244,7 @@
   .search-box {
     height: 76rpx;
     padding: 0 24rpx;
-    border-radius: 12rpx;
+    border-radius: 38rpx;
     background: #fff;
     border: 1px solid #ebeef5;
   }
@@ -144,36 +269,79 @@
   .section-title {
     margin-bottom: 16rpx;
     font-size: 28rpx;
-    font-weight: 600;
+    font-weight: 700;
     color: #111827;
+  }
+
+  .location-card,
+  .city-list {
+    overflow: hidden;
+    border-radius: 16rpx;
+    background: #fff;
+    border: 1px solid #edf0f5;
+  }
+
+  .location-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20rpx;
+    padding: 24rpx;
+  }
+
+  .location-main {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .locate-btn {
+    flex-shrink: 0;
+    height: 62rpx;
+    display: flex;
+    align-items: center;
+    gap: 6rpx;
+    padding: 0 22rpx;
+    border-radius: 999rpx;
+    color: #2563eb;
+    background: #eff6ff;
+    font-size: 24rpx;
+    font-weight: 700;
+  }
+
+  .selected-tip {
+    margin-top: 14rpx;
+    color: #64748b;
+    font-size: 24rpx;
   }
 
   .hot-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 16rpx;
   }
 
   .city-chip {
-    height: 64rpx;
-    line-height: 64rpx;
+    height: 68rpx;
+    line-height: 68rpx;
     padding: 0;
-    border-radius: 8rpx;
+    border-radius: 12rpx;
     background: #fff;
-    color: #2563eb;
+    color: #334155;
     font-size: 26rpx;
-    border: 1px solid #dbeafe;
+    border: 1px solid #e2e8f0;
+  }
+
+  .city-chip.selected,
+  .city-row.selected {
+    color: #2563eb;
+    background: #eff6ff;
+    border-color: #bfdbfe;
   }
 
   .city-chip.disabled {
     color: #9ca3af;
     border-color: #e5e7eb;
-  }
-
-  .city-list {
-    overflow: hidden;
-    border-radius: 12rpx;
-    background: #fff;
+    background: #f8fafc;
   }
 
   .city-row {
@@ -182,23 +350,32 @@
     border-bottom: 1px solid #f1f5f9;
   }
 
-  .city-row:last-child {
+  .letter-row {
+    padding: 12rpx 24rpx;
+    color: #64748b;
+    background: #f8fafc;
+    font-size: 22rpx;
+    font-weight: 800;
+  }
+
+  .city-group:last-child .city-row:last-child {
     border-bottom: 0;
   }
 
   .city-name {
-    font-size: 28rpx;
-    font-weight: 500;
+    font-size: 30rpx;
+    font-weight: 700;
     color: #111827;
   }
 
   .city-meta {
-    margin-top: 6rpx;
-    font-size: 22rpx;
+    margin-top: 8rpx;
+    font-size: 23rpx;
     color: #8a9099;
   }
 
   .status {
+    flex-shrink: 0;
     font-size: 24rpx;
   }
 

@@ -1,7 +1,14 @@
 <template>
   <s-layout class="identity-page" title="家教身份" navbar="inner">
+    <view class="hero">
+      <view class="hero-title">选择你的家教身份</view>
+      <view class="hero-subtitle"
+        >身份决定首页推荐和发布表单，首次选择后由平台保护，不会被误改。</view
+      >
+    </view>
+
     <view class="section">
-      <view class="section-title">当前城市</view>
+      <view class="section-title">服务城市</view>
       <view class="city-row ss-flex ss-row-between ss-col-center" @tap="goCity">
         <view>
           <view class="city-name">{{ state.city.name || '请选择服务城市' }}</view>
@@ -9,7 +16,7 @@
             {{
               state.city.province
                 ? `${state.city.province} · ${state.city.code}`
-                : '仅展示已开通城市'
+                : '定位失败时也可以手动选择'
             }}
           </view>
         </view>
@@ -18,21 +25,26 @@
     </view>
 
     <view class="section">
-      <view class="section-title">选择身份</view>
+      <view class="section-title">身份类型</view>
       <view class="role-list">
         <button
           v-for="role in roles"
           :key="role.value"
-          class="role-item"
-          :class="{ active: state.form.role === role.value, disabled: state.profile?.role }"
+          class="role-item ss-reset-button"
+          :class="{ active: state.form.role === role.value, locked: Boolean(state.profile?.role) }"
           :disabled="Boolean(state.profile?.role)"
           @tap="selectRole(role.value)"
         >
-          <view class="role-head ss-flex ss-row-between ss-col-center">
-            <text class="role-name">{{ role.name }}</text>
-            <text v-if="state.form.role === role.value" class="role-check">已选择</text>
+          <view class="role-icon" :class="role.color">
+            <text :class="role.icon"></text>
           </view>
-          <view class="role-desc">{{ role.desc }}</view>
+          <view class="role-body">
+            <view class="role-head ss-flex ss-row-between ss-col-center">
+              <text class="role-name">{{ role.name }}</text>
+              <text v-if="state.form.role === role.value" class="role-check">已选择</text>
+            </view>
+            <view class="role-desc">{{ role.desc }}</view>
+          </view>
         </button>
       </view>
     </view>
@@ -55,9 +67,19 @@
       </view>
     </view>
 
+    <view class="tips">
+      <view class="tip-title">身份说明</view>
+      <view class="tip-line">家长可发布找老师需求，查看教师联系方式。</view>
+      <view class="tip-line">教师需通过认证后发布授课简历，联系家长需求。</view>
+    </view>
+
     <view class="footer">
-      <button v-if="!state.profile" class="primary-btn" @tap="submitProfile">确认身份</button>
-      <button v-else class="primary-btn ghost" @tap="updateLocation">更新定位</button>
+      <button v-if="!state.profile" class="primary-btn ss-reset-button" @tap="submitProfile">
+        确认身份并进入首页
+      </button>
+      <button v-else class="primary-btn ghost ss-reset-button" @tap="updateLocation">
+        更新定位
+      </button>
     </view>
   </s-layout>
 </template>
@@ -67,17 +89,22 @@
   import { onShow } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
   import TutorProfileApi from '@/sheep/api/tutor/profile';
+  import { TUTOR_ROLE } from '@/sheep/api/tutor/utils';
 
   const roles = [
     {
-      value: 1,
-      name: '家长',
-      desc: '发布孩子辅导需求，查找合适老师。',
+      value: TUTOR_ROLE.PARENT,
+      name: '我是家长/学生',
+      desc: '发布孩子辅导需求，按科目、城市和距离查找合适老师。',
+      icon: 'cicon-group',
+      color: 'parent',
     },
     {
-      value: 2,
-      name: '教师',
-      desc: '完善授课信息，展示简历并联系家长。',
+      value: TUTOR_ROLE.TEACHER,
+      name: '我是老师',
+      desc: '完善教师资料和认证，发布授课简历并联系家长需求。',
+      icon: 'cicon-book',
+      color: 'teacher',
     },
   ];
 
@@ -94,11 +121,13 @@
     if (!state.profile?.longitude || !state.profile?.latitude) {
       return '未更新';
     }
-    return `${state.profile.longitude}, ${state.profile.latitude}`;
+    return `${Number(state.profile.longitude).toFixed(4)}, ${Number(state.profile.latitude).toFixed(
+      4,
+    )}`;
   });
 
   function loadCity() {
-    state.city = uni.getStorageSync('tutor_city') || {};
+    state.city = uni.getStorageSync('tutor_city') || uni.getStorageSync('tutor_located_city') || {};
   }
 
   async function loadProfile() {
@@ -142,15 +171,15 @@
       });
       return;
     }
-    const { code, data } = await TutorProfileApi.initProfile({
+    const result = await TutorProfileApi.initProfile({
       role: state.form.role,
       cityCode: state.city.code,
     });
-    if (code !== 0) {
+    if (result?.code !== 0) {
       return;
     }
-    state.profile = data;
-    userStore.setTutorProfile(data);
+    state.profile = result.data;
+    userStore.setTutorProfile(result.data);
     uni.switchTab({
       url: '/pages/index/index',
     });
@@ -163,17 +192,21 @@
     uni.getLocation({
       type: 'gcj02',
       success: async (res) => {
-        const { code, data } = await TutorProfileApi.updateLocation({
+        uni.setStorageSync('tutor_location', {
+          longitude: res.longitude,
+          latitude: res.latitude,
+        });
+        const result = await TutorProfileApi.updateLocation({
           cityCode: state.city?.code || state.profile.cityCode,
           longitude: res.longitude,
           latitude: res.latitude,
-          locationAddress: '',
+          locationAddress: state.city?.name || '',
         });
-        if (code !== 0) {
+        if (result?.code !== 0) {
           return;
         }
-        state.profile = data;
-        userStore.setTutorProfile(data);
+        state.profile = result.data;
+        userStore.setTutorProfile(result.data);
       },
       fail: () => {
         uni.showToast({
@@ -196,20 +229,41 @@
     background: #f6f7fb;
   }
 
+  .hero {
+    margin: 24rpx;
+    padding: 30rpx;
+    border-radius: 24rpx;
+    color: #fff;
+    background: linear-gradient(135deg, #2563eb 0%, #0f766e 100%);
+  }
+
+  .hero-title {
+    font-size: 40rpx;
+    font-weight: 900;
+  }
+
+  .hero-subtitle {
+    margin-top: 14rpx;
+    font-size: 25rpx;
+    line-height: 40rpx;
+    opacity: 0.9;
+  }
+
   .section {
-    padding: 24rpx;
+    padding: 0 24rpx 24rpx;
   }
 
   .section-title {
     margin-bottom: 16rpx;
     color: #111827;
     font-size: 28rpx;
-    font-weight: 600;
+    font-weight: 700;
   }
 
   .city-row,
-  .profile-box {
-    border-radius: 12rpx;
+  .profile-box,
+  .tips {
+    border-radius: 16rpx;
     background: #fff;
     border: 1px solid #edf0f5;
   }
@@ -222,7 +276,7 @@
   .city-name {
     color: #111827;
     font-size: 30rpx;
-    font-weight: 600;
+    font-weight: 700;
   }
 
   .city-meta {
@@ -239,10 +293,13 @@
 
   .role-item {
     width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 22rpx;
     margin: 0;
-    padding: 24rpx;
+    padding: 26rpx;
     text-align: left;
-    border-radius: 12rpx;
+    border-radius: 20rpx;
     background: #fff;
     border: 1px solid #edf0f5;
   }
@@ -250,10 +307,39 @@
   .role-item.active {
     border-color: #2563eb;
     background: #eff6ff;
+    box-shadow: 0 12rpx 24rpx rgba(37, 99, 235, 0.08);
   }
 
-  .role-item.disabled {
-    opacity: 0.82;
+  .role-item.locked {
+    opacity: 0.9;
+  }
+
+  .role-icon {
+    width: 108rpx;
+    height: 108rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 54rpx;
+    color: #fff;
+  }
+
+  .role-icon text {
+    font-size: 50rpx;
+  }
+
+  .role-icon.parent {
+    background: #2563eb;
+  }
+
+  .role-icon.teacher {
+    background: #f97316;
+  }
+
+  .role-body {
+    min-width: 0;
+    flex: 1;
   }
 
   .role-head {
@@ -262,11 +348,12 @@
 
   .role-name {
     color: #111827;
-    font-size: 32rpx;
-    font-weight: 600;
+    font-size: 31rpx;
+    font-weight: 800;
   }
 
   .role-check {
+    flex-shrink: 0;
     color: #2563eb;
     font-size: 24rpx;
   }
@@ -292,23 +379,45 @@
     border-bottom: 0;
   }
 
-  .footer {
+  .tips {
+    margin: 0 24rpx 24rpx;
     padding: 24rpx;
+    background: #fffbeb;
+    border-color: #fde68a;
+  }
+
+  .tip-title {
+    color: #92400e;
+    font-size: 27rpx;
+    font-weight: 800;
+  }
+
+  .tip-line {
+    margin-top: 10rpx;
+    color: #92400e;
+    font-size: 24rpx;
+    line-height: 36rpx;
+  }
+
+  .footer {
+    padding: 0 24rpx 32rpx;
   }
 
   .primary-btn {
     height: 88rpx;
     line-height: 88rpx;
-    border-radius: 12rpx;
+    border-radius: 999rpx;
     color: #fff;
     background: #2563eb;
+    box-shadow: 0 14rpx 30rpx rgba(37, 99, 235, 0.22);
     font-size: 30rpx;
-    font-weight: 600;
+    font-weight: 800;
   }
 
   .primary-btn.ghost {
     color: #2563eb;
     background: #fff;
     border: 1px solid #bfdbfe;
+    box-shadow: none;
   }
 </style>
