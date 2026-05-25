@@ -1,83 +1,66 @@
-<!-- 我的积分 -->
 <template>
-  <s-layout class="wallet-wrap" title="我的积分" navbar="inner">
-    <view
-      class="header-box ss-flex ss-flex-col ss-row-center ss-col-center"
-      :style="[
-        {
-          marginTop: '-' + Number(statusBarHeight + 88) + 'rpx',
-          paddingTop: Number(statusBarHeight + 88) + 'rpx',
-        },
-      ]"
-    >
-      <view class="header-bg">
-        <view class="bg" />
-      </view>
-      <view class="score-box ss-flex-col ss-row-center ss-col-center">
-        <view class="ss-m-b-30">
-          <text class="all-title ss-m-r-8">当前积分</text>
-        </view>
-        <text class="all-num">{{ userInfo.point || 0 }}</text>
-      </view>
+  <s-layout class="page" title="" navbar="">
+    <view class="score-header">
+      <button class="back-btn ss-reset-button" @tap="goBack">
+        <text class="cicon-back"></text>
+      </button>
+      <view class="balance-label">我的积分</view>
+      <view class="balance">{{ pointBalance }}</view>
+      <view class="balance-desc">积分可用于查看联系方式，30 天内复看同一联系人免费。</view>
     </view>
-    <!-- tab -->
-    <su-sticky :customNavHeight="sys_navBar">
-      <!-- 统计 -->
-      <view class="filter-box ss-p-x-30 ss-flex ss-col-center ss-row-between">
-        <uni-datetime-picker
-          v-model="state.date"
-          type="daterange"
-          @change="onChangeTime"
-          :end="state.today"
-        >
-          <button class="ss-reset-button date-btn">
-            <text>{{ dateFilterText }}</text>
-            <text class="cicon-drop-down ss-seldate-icon"></text>
-          </button>
-        </uni-datetime-picker>
 
-        <!-- TODO 芋艿：【钱包-可优化】展示一下 -->
-        <!--				<view class="total-box">-->
-        <!--					<view class="ss-m-b-10">总收入￥{{ state.pagination.income }}</view>-->
-        <!--					<view>总支出￥{{ -state.pagination.expense }}</view>-->
-        <!--				</view>-->
+    <view v-if="state.insufficient" class="guide-card warning">
+      <view>
+        <view class="guide-title">积分不足</view>
+        <view class="guide-desc">查看联系方式需 10 积分，可联系平台客服充值或完成任务获取。</view>
       </view>
-      <su-tabs
-        :list="tabMaps"
-        @change="onChange"
-        :scrollable="false"
-        :current="state.currentTab"
-      ></su-tabs>
-    </su-sticky>
+      <button class="guide-btn ss-reset-button" @tap="goService">联系客服</button>
+    </view>
 
-    <!-- list -->
+    <view class="guide-card">
+      <view>
+        <view class="guide-title">P0 获取方式</view>
+        <view class="guide-desc">每日签到、完善资料、五星评价奖励、后台人工充值。</view>
+      </view>
+      <button class="guide-btn ss-reset-button" @tap="goService">充值/客服</button>
+    </view>
+
+    <view class="tabs">
+      <button
+        v-for="(tab, index) in tabMaps"
+        :key="tab.value"
+        class="tab ss-reset-button"
+        :class="{ active: state.currentTab === index }"
+        @tap="changeTab(index)"
+      >
+        {{ tab.name }}
+      </button>
+    </view>
+
     <view class="list-box">
-      <view v-if="state.pagination.total > 0">
-        <view
-          class="list-item ss-flex ss-col-center ss-row-between"
-          v-for="item in state.pagination.list"
-          :key="item.id"
-        >
-          <view class="ss-flex-col">
+      <view v-if="state.pagination.list.length">
+        <view class="list-item" v-for="item in state.pagination.list" :key="item.id">
+          <view>
             <view class="name"
               >{{ item.title }}{{ item.description ? ' - ' + item.description : '' }}</view
             >
-            <view class="time">{{
-              sheep.$helper.timeFormat(item.createTime, 'yyyy-mm-dd hh:MM:ss')
-            }}</view>
+            <view class="time">{{ formatTime(item.createTime) }}</view>
           </view>
-          <view class="add" v-if="item.point > 0">+{{ item.point }}</view>
-          <view class="minus" v-else>{{ item.point }}</view>
+          <view class="point" :class="{ income: Number(item.point) > 0 }">
+            {{ Number(item.point) > 0 ? '+' : '' }}{{ item.point }}
+          </view>
         </view>
       </view>
-      <s-empty v-else text="暂无数据" icon="/static/data-empty.png" />
+      <s-empty v-else text="暂无积分明细" icon="/static/data-empty.png" />
     </view>
 
     <uni-load-more
-      v-if="state.pagination.total > 0"
+      v-if="state.pagination.list.length"
       :status="state.loadStatus"
       :content-text="{
         contentdown: '上拉加载更多',
+        contentrefresh: '加载中',
+        contentnomore: '没有更多了',
       }"
       @tap="onLoadMore"
     />
@@ -85,198 +68,280 @@
 </template>
 
 <script setup>
-  import sheep from '@/sheep';
+  import { computed, reactive, ref } from 'vue';
   import { onLoad, onReachBottom } from '@dcloudio/uni-app';
-  import { computed, reactive } from 'vue';
-  import { concat } from 'lodash-es';
   import dayjs from 'dayjs';
+  import sheep from '@/sheep';
   import PointApi from '@/sheep/api/member/point';
-  import { resetPagination } from '@/sheep/helper/utils';
+  import { getLocalPoints } from '@/sheep/api/tutor/local-state';
 
-  const statusBarHeight = sheep.$platform.device.statusBarHeight * 2;
-  const userInfo = computed(() => sheep.$store('user').userInfo);
-  const sys_navBar = sheep.$platform.navbar;
+  const userInfo = computed(() => sheep.$store('user').userInfo || {});
+  const localPoints = ref(getLocalPoints());
+  const pointBalance = computed(() =>
+    userInfo.value.point === undefined || userInfo.value.point === null
+      ? localPoints.value
+      : userInfo.value.point,
+  );
 
   const state = reactive({
+    insufficient: false,
     currentTab: 0,
     pagination: {
-      list: 0,
+      list: [],
       total: 0,
-      pageSize: 6,
+      pageSize: 10,
       pageNo: 1,
     },
-    loadStatus: '',
-    date: [],
-    today: '',
+    loadStatus: 'more',
   });
 
   const tabMaps = [
-    {
-      name: '全部',
-      value: 'all',
-    },
-    {
-      name: '收入',
-      value: 'true',
-    },
-    {
-      name: '支出',
-      value: 'false',
-    },
+    { name: '全部', value: 'all' },
+    { name: '收入', value: 'true' },
+    { name: '支出', value: 'false' },
   ];
 
-  const dateFilterText = computed(() => {
-    if (state.date[0] === state.date[1]) {
-      return state.date[0];
-    } else {
-      return state.date.join('~');
-    }
-  });
+  function formatTime(value) {
+    return value ? dayjs(value).format('YYYY-MM-DD HH:mm') : '';
+  }
 
-  async function getLogList() {
+  function fallbackRecords() {
+    return [
+      {
+        id: 'local-contact',
+        title: '查看联系方式',
+        description: '本地示例扣分',
+        point: -10,
+        createTime: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+      },
+      {
+        id: 'local-review',
+        title: '五星评价奖励',
+        description: '待平台入账',
+        point: 10,
+        createTime: dayjs().subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss'),
+      },
+    ].filter((item) => {
+      if (state.currentTab === 1) return item.point > 0;
+      if (state.currentTab === 2) return item.point < 0;
+      return true;
+    });
+  }
+
+  async function getLogList(reset = false) {
+    if (reset) {
+      state.pagination.pageNo = 1;
+      state.pagination.list = [];
+      state.loadStatus = 'more';
+    }
+    if (state.loadStatus === 'loading') return;
     state.loadStatus = 'loading';
-    let { code, data } = await PointApi.getPointRecordPage({
+    const result = await PointApi.getPointRecordPage({
       pageNo: state.pagination.pageNo,
       pageSize: state.pagination.pageSize,
       addStatus: state.currentTab > 0 ? tabMaps[state.currentTab].value : undefined,
-      'createTime[0]': state.date[0] + ' 00:00:00',
-      'createTime[1]': state.date[1] + ' 23:59:59',
     });
-    if (code !== 0) {
-      return;
+    if (result?.code === 0) {
+      const list = result.data?.list || [];
+      state.pagination.list = reset ? list : [...state.pagination.list, ...list];
+      state.pagination.total = Number(result.data?.total || list.length);
+    } else if (reset || !state.pagination.list.length) {
+      const list = fallbackRecords();
+      state.pagination.list = list;
+      state.pagination.total = list.length;
     }
-    state.pagination.list = concat(state.pagination.list, data.list);
-    state.pagination.total = data.total;
     state.loadStatus = state.pagination.list.length < state.pagination.total ? 'more' : 'noMore';
   }
 
-  onLoad(() => {
-    state.today = dayjs().format('YYYY-MM-DD');
-    state.date = [state.today, state.today];
-    getLogList();
-  });
-
-  function onChange(e) {
-    state.currentTab = e.index;
-    resetPagination(state.pagination);
-    getLogList();
-  }
-
-  function onChangeTime(e) {
-    state.date[0] = e[0];
-    state.date[1] = e[e.length - 1];
-    resetPagination(state.pagination);
-    getLogList();
+  function changeTab(index) {
+    state.currentTab = index;
+    getLogList(true);
   }
 
   function onLoadMore() {
-    if (state.loadStatus === 'noMore') {
-      return;
-    }
-    state.pagination.pageNo++;
-    getLogList();
+    if (state.loadStatus !== 'more') return;
+    state.pagination.pageNo += 1;
+    getLogList(false);
   }
 
-  onReachBottom(() => {
-    onLoadMore();
+  function goBack() {
+    const pages = getCurrentPages();
+    if (pages.length > 1) {
+      uni.navigateBack();
+      return;
+    }
+    uni.switchTab({ url: '/pages/index/user' });
+  }
+
+  function goService() {
+    uni.switchTab({ url: '/pages/index/message' });
+  }
+
+  onLoad((options = {}) => {
+    state.insufficient = options.scene === 'insufficient';
+    localPoints.value = getLocalPoints();
+    getLogList(true);
   });
+
+  onReachBottom(onLoadMore);
 </script>
 
 <style lang="scss" scoped>
-  .header-box {
-    width: 100%;
-    background: linear-gradient(180deg, var(--ui-BG-Main) 0%, var(--ui-BG-Main-gradient) 100%)
-      no-repeat;
-    background-size: 750rpx 100%;
-    padding: 0 0 120rpx 0;
-    box-sizing: border-box;
-
-    .score-box {
-      height: 100%;
-
-      .all-num {
-        font-size: 50rpx;
-        font-weight: bold;
-        color: #fff;
-        font-family: OPPOSANS;
-      }
-
-      .all-title {
-        font-size: 26rpx;
-        font-weight: 500;
-        color: #fff;
-      }
-
-      .cicon-help-o {
-        color: #fff;
-        font-size: 28rpx;
-      }
-    }
+  .page {
+    min-height: 100vh;
+    background: #f8fafc;
   }
 
-  // 筛选
-  .filter-box {
-    height: 114rpx;
-    background-color: $bg-page;
+  .score-header {
+    position: relative;
+    padding: calc(var(--status-bar-height) + 20rpx) 32rpx 92rpx;
+    color: #ffffff;
+    background: linear-gradient(145deg, #1d4ed8 0%, #2563eb 60%, #60a5fa 100%);
+  }
 
-    .total-box {
-      font-size: 24rpx;
-      font-weight: 500;
-      color: $dark-9;
-    }
+  .back-btn {
+    width: 62rpx;
+    height: 62rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 34rpx;
+  }
 
-    .date-btn {
-      background-color: $white;
-      line-height: 54rpx;
-      border-radius: 27rpx;
-      padding: 0 20rpx;
-      font-size: 24rpx;
-      font-weight: 500;
-      color: $dark-6;
+  .balance-label {
+    margin-top: 20rpx;
+    font-size: 26rpx;
+    opacity: 0.9;
+  }
 
-      .ss-seldate-icon {
-        font-size: 50rpx;
-        color: $dark-9;
-      }
-    }
+  .balance {
+    margin-top: 12rpx;
+    font-size: 76rpx;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .balance-desc {
+    margin-top: 18rpx;
+    width: 86%;
+    font-size: 24rpx;
+    line-height: 38rpx;
+    opacity: 0.86;
+  }
+
+  .guide-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20rpx;
+    margin: -46rpx 24rpx 24rpx;
+    padding: 26rpx;
+    border-radius: 18rpx;
+    background: #ffffff;
+    border: 1px solid #e8eef0;
+    box-shadow: 0 16rpx 36rpx rgba(15, 23, 42, 0.08);
+  }
+
+  .guide-card + .guide-card {
+    margin-top: 0;
+    box-shadow: none;
+  }
+
+  .guide-card.warning {
+    border-color: #fed7aa;
+    background: #fff7ed;
+  }
+
+  .guide-title {
+    color: #0f172a;
+    font-size: 30rpx;
+    font-weight: 900;
+  }
+
+  .guide-desc {
+    margin-top: 8rpx;
+    color: #64748b;
+    font-size: 24rpx;
+    line-height: 36rpx;
+  }
+
+  .guide-btn {
+    flex-shrink: 0;
+    height: 66rpx;
+    padding: 0 22rpx;
+    border-radius: 999rpx;
+    color: #ffffff;
+    background: #2563eb;
+    font-size: 24rpx;
+    font-weight: 800;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 10rpx;
+    margin: 0 24rpx 20rpx;
+    padding: 8rpx;
+    border-radius: 16rpx;
+    background: #e2e8f0;
+  }
+
+  .tab {
+    flex: 1;
+    height: 68rpx;
+    border-radius: 12rpx;
+    color: #64748b;
+    font-size: 26rpx;
+    font-weight: 800;
+  }
+
+  .tab.active {
+    color: #2563eb;
+    background: #ffffff;
   }
 
   .list-box {
-    .list-item {
-      background: #fff;
-      border-bottom: 1rpx solid #dfdfdf;
-      padding: 30rpx;
+    margin: 0 24rpx 24rpx;
+    overflow: hidden;
+    border-radius: 16rpx;
+    background: #ffffff;
+    border: 1px solid #e8eef0;
+  }
 
-      .name {
-        font-size: 28rpx;
+  .list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20rpx;
+    padding: 28rpx;
+    border-bottom: 1px solid #eef2f7;
+  }
 
-        font-weight: 500;
-        color: rgba(102, 102, 102, 1);
-        line-height: 28rpx;
-        margin-bottom: 20rpx;
-      }
+  .list-item:last-child {
+    border-bottom: 0;
+  }
 
-      .time {
-        font-size: 24rpx;
+  .name {
+    color: #0f172a;
+    font-size: 28rpx;
+    font-weight: 800;
+    line-height: 38rpx;
+  }
 
-        font-weight: 500;
-        color: rgba(196, 196, 196, 1);
-        line-height: 24px;
-      }
+  .time {
+    margin-top: 8rpx;
+    color: #94a3b8;
+    font-size: 23rpx;
+  }
 
-      .add {
-        font-size: 30rpx;
+  .point {
+    flex-shrink: 0;
+    color: #ef4444;
+    font-size: 32rpx;
+    font-weight: 900;
+  }
 
-        font-weight: 500;
-        color: #e6b873;
-      }
-
-      .minus {
-        font-size: 30rpx;
-
-        font-weight: 500;
-        color: $dark-3;
-      }
-    }
+  .point.income {
+    color: #16a34a;
   }
 </style>

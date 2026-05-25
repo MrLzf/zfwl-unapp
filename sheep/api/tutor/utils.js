@@ -170,9 +170,24 @@ export function modeText(mode) {
 }
 
 export function modeKey(mode) {
+  if (Array.isArray(mode)) {
+    const keys = mode.map((item) => modeKey(item));
+    if (keys.includes('offline') && keys.includes('online')) return 'both';
+    return keys[0] || 'both';
+  }
+  const text = String(mode || '');
+  if (text.includes(',') || text.includes('、')) {
+    const parts = text.split(/[,，、]/).map((item) => item.trim());
+    const keys = parts.map((item) => modeKey(item));
+    if (keys.includes('offline') && keys.includes('online')) return 'both';
+    return keys[0] || 'both';
+  }
   if (mode === 1 || mode === '1') return 'offline';
   if (mode === 2 || mode === '2') return 'online';
   if (mode === 3 || mode === '3') return 'both';
+  if (mode === '上门') return 'offline';
+  if (mode === '在线') return 'online';
+  if (mode === '均可' || mode === '上门/在线') return 'both';
   return mode || 'both';
 }
 
@@ -223,6 +238,7 @@ export function normalizeDemand(item = {}, index = 0) {
     ...item,
     id: item.id || `req-${index}`,
     type: 'req',
+    targetType: 'demand',
     title: item.title || '家长需求',
     parentName: item.parentName || item.contactName || '家长用户',
     avatar: item.avatar || '/static/data-empty.png',
@@ -239,7 +255,9 @@ export function normalizeDemand(item = {}, index = 0) {
     urgent: item.urgent ?? false,
     contactName: item.contactName || item.parentName || '联系人',
     contactPhone: item.contactMobileMask || item.contactPhone || '',
+    contactWechat: item.contactWechatMask || item.contactWechat || '',
     fullPhone: item.contactMobile || item.fullPhone || item.contactMobileMask || '',
+    fullWechat: item.contactWechat || item.fullWechat || item.contactWechatMask || '',
     description: item.description || '暂无详细说明',
     expectations: item.expectations || ['沟通耐心', '时间稳定'],
     statusMeta: getStatusMeta(item),
@@ -253,6 +271,7 @@ export function normalizeResume(item = {}, index = 0) {
     ...item,
     id: item.id || `tutor-${index}`,
     type: 'tutor',
+    targetType: 'resume',
     name: item.name || item.teacherName || '家教老师',
     title: item.title || item.name || '教师简历',
     city: item.cityName || item.city || '同城',
@@ -271,7 +290,9 @@ export function normalizeResume(item = {}, index = 0) {
     reviewCount: item.reviewCount || item.reviews || 0,
     contactName: item.contactName || item.name || '联系人',
     contactPhone: item.contactMobileMask || item.contactPhone || '',
+    contactWechat: item.contactWechatMask || item.contactWechat || '',
     fullPhone: item.contactMobile || item.fullPhone || item.contactMobileMask || '',
+    fullWechat: item.contactWechat || item.fullWechat || item.contactWechatMask || '',
     description: item.teachingExperience || item.description || item.intro || '暂无教学介绍',
     expectations: item.expectations || ['免费沟通', '可试听', '课后反馈'],
     statusMeta: getStatusMeta(item),

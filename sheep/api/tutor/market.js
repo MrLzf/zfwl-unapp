@@ -53,6 +53,17 @@ const TutorMarketApi = {
       },
     });
   },
+  getDetail: (targetType, id, params = {}) => {
+    return request({
+      url: `/tutor/detail/${targetType}/${id}${buildQuery(params)}`,
+      method: 'GET',
+      custom: {
+        showLoading: false,
+        showError: false,
+        isToken: true,
+      },
+    });
+  },
 };
 
 export default TutorMarketApi;
