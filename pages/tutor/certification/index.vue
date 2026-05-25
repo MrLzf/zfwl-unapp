@@ -271,7 +271,7 @@
       uni.showToast({ title: '请输入真实姓名', icon: 'none' });
       return false;
     }
-    if (!form.idCardNo.trim() && !state.certification?.idCardNoMask) {
+    if (!form.idCardNo.trim()) {
       uni.showToast({ title: '请输入身份证号', icon: 'none' });
       return false;
     }

@@ -123,7 +123,9 @@
   import sheep from '@/sheep';
   import { showAuthModal } from '@/sheep/hooks/useModal';
   import TutorCertificationApi from '@/sheep/api/tutor/certification';
+  import TutorInteractionApi from '@/sheep/api/tutor/interaction';
   import TutorPostApi from '@/sheep/api/tutor/post';
+  import { getLocalContacts, targetKey } from '@/sheep/api/tutor/local-state';
   import { TUTOR_AUDIT_STATUS, TUTOR_ROLE } from '@/sheep/api/tutor/utils';
 
   const userStore = sheep.$store('user');
@@ -255,6 +257,25 @@
     state.postCount = demandCount + resumeCount;
   }
 
+  async function loadContactCount() {
+    state.contactCount = 0;
+    if (!isLogin.value) {
+      return;
+    }
+    const localCount = getLocalContacts().length;
+    const result = await TutorInteractionApi.getContactRecordList();
+    if (result?.code === 0) {
+      const keys = new Set(
+        [...(result.data || []), ...getLocalContacts()].map((item) =>
+          targetKey(item.targetType || item.type, item.targetId || item.id),
+        ),
+      );
+      state.contactCount = keys.size;
+      return;
+    }
+    state.contactCount = localCount;
+  }
+
   async function loadProfile() {
     if (!isLogin.value) {
       userStore.setTutorProfile(null);
@@ -266,7 +287,7 @@
   async function refresh() {
     await userStore.updateUserData();
     await loadProfile();
-    await Promise.all([loadCertification(), loadPostCount()]);
+    await Promise.all([loadCertification(), loadPostCount(), loadContactCount()]);
   }
 
   async function logout() {

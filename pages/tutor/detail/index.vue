@@ -380,9 +380,10 @@
       let loaded = null;
       if (isNumericId(state.id)) {
         const city = uni.getStorageSync('tutor_city') || {};
+        const location = uni.getStorageSync('tutor_location') || {};
         const result = await TutorMarketApi.getDetail(state.targetType, state.id, {
-          longitude: city.longitude,
-          latitude: city.latitude,
+          longitude: location.longitude || city.longitude,
+          latitude: location.latitude || city.latitude,
         });
         if (result?.code === 0) {
           loaded = normalizeDetailPayload(result.data);
