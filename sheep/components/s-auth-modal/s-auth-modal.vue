@@ -93,7 +93,7 @@
 
         <view class="agreement-options-container">
           <!-- 同意选项 -->
-          <view class="agreement-option">
+          <view class="agreement-option" :class="{ selected: state.protocol === true }">
             <view class="radio ss-flex ss-col-center" @tap="onAgree">
               <radio
                 :checked="state.protocol === true"
@@ -111,7 +111,10 @@
           </view>
 
           <!-- 拒绝选项 -->
-          <view class="agreement-option">
+          <view
+            class="agreement-option"
+            :class="{ selected: state.protocol === false, refuse: true }"
+          >
             <view class="radio ss-flex ss-col-center" @tap="onRefuse">
               <radio
                 :checked="state.protocol === false"
@@ -294,7 +297,8 @@
   }
 
   .tcp-text {
-    color: #999999;
+    color: #64748b;
+    font-weight: 600;
   }
 
   .agreement-text {
@@ -312,7 +316,7 @@
 
   .agreement-options-container {
     width: 100%;
-    padding-left: 84rpx;
+    padding: 0 38rpx;
     margin-top: 20rpx;
   }
 
@@ -320,15 +324,51 @@
     width: 100%;
     display: flex;
     justify-content: flex-start;
-    margin-bottom: 22rpx;
+    margin-bottom: 14rpx;
+    padding: 16rpx 18rpx;
+    border-radius: 16rpx;
+    border: 2rpx solid transparent;
+    background: transparent;
+    box-sizing: border-box;
     .radio {
       align-items: flex-start;
+      width: 100%;
     }
     .agreement-text {
       flex-wrap: wrap;
       font-size: 28rpx;
       line-height: 40rpx;
       color: #999999;
+    }
+    radio {
+      margin-top: 2rpx;
+    }
+  }
+
+  .agreement-option.selected {
+    background: #eff6ff;
+    border-color: #2563eb;
+    box-shadow: 0 8rpx 20rpx rgba(37, 99, 235, 0.12);
+
+    .agreement-text {
+      color: #1e3a8a;
+      font-weight: 600;
+    }
+
+    .tcp-text {
+      color: #2563eb;
+      font-weight: 800;
+    }
+  }
+
+  .agreement-option.refuse.selected {
+    background: #fff1f2;
+    border-color: #ff4d4f;
+    box-shadow: 0 8rpx 20rpx rgba(255, 77, 79, 0.1);
+
+    .agreement-text,
+    .tcp-text {
+      color: #b91c1c;
     }
   }
 </style>
