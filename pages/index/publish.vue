@@ -58,6 +58,11 @@
         </view>
 
         <view v-else class="form-panel">
+          <view v-if="postType === 'parent'" class="sync-tip">
+            <text class="cicon-check-round"></text>
+            <text>首次发布会同步保存家长资料，后续可在资料页继续完善。</text>
+          </view>
+
           <label class="field">
             <text>标题</text>
             <input v-model="form.title" :placeholder="titlePlaceholder" maxlength="40" />
@@ -629,6 +634,26 @@
 
   .form-panel {
     padding: 24rpx;
+  }
+
+  .sync-tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 12rpx;
+    margin-bottom: 24rpx;
+    padding: 18rpx 20rpx;
+    border-radius: 14rpx;
+    color: #166534;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    font-size: 24rpx;
+    line-height: 36rpx;
+  }
+
+  .sync-tip .cicon-check-round {
+    flex-shrink: 0;
+    margin-top: 2rpx;
+    font-size: 28rpx;
   }
 
   .field-grid {

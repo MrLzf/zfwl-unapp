@@ -112,7 +112,7 @@
     right: 0;
     bottom: 0;
     z-index: 998;
-    height: calc(100rpx + env(safe-area-inset-bottom));
+    height: calc(132rpx + env(safe-area-inset-bottom));
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     align-items: start;
@@ -120,15 +120,16 @@
     border-top: 1px solid #e5e7eb;
     box-shadow: 0 -4rpx 18rpx rgba(15, 23, 42, 0.06);
     box-sizing: border-box;
+    overflow: visible;
   }
 
   .tabbar-placeholder {
-    height: calc(100rpx + env(safe-area-inset-bottom));
+    height: calc(132rpx + env(safe-area-inset-bottom));
   }
 
   .tabbar-item {
     min-width: 0;
-    height: 90rpx;
+    height: 112rpx;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -157,27 +158,28 @@
 
   .tabbar-item.center {
     position: relative;
-    gap: 0;
+    gap: 2rpx;
+    overflow: visible;
   }
 
   .center-bubble {
-    width: 92rpx;
-    height: 92rpx;
+    width: 80rpx;
+    height: 80rpx;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: -42rpx;
-    margin-bottom: 4rpx;
+    margin-top: 0;
+    margin-bottom: 2rpx;
     border-radius: 50%;
     color: #fff;
     background: var(--tabbar-active-color);
-    border: 8rpx solid #fff;
+    border: 6rpx solid #fff;
     box-shadow: 0 12rpx 28rpx rgba(37, 99, 235, 0.35);
     box-sizing: border-box;
   }
 
   .center-bubble text {
-    font-size: 50rpx;
-    line-height: 50rpx;
+    font-size: 46rpx;
+    line-height: 46rpx;
   }
 </style>
