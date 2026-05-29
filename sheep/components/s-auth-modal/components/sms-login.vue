@@ -298,18 +298,25 @@
   }
 
   .role-card {
-    height: 148rpx;
+    min-height: 150rpx;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 14rpx;
+    padding: 18rpx 12rpx;
     border-radius: 16rpx;
     color: #94a3b8;
     background: #ffffff;
     border: 2rpx solid #e2e8f0;
+    line-height: 1;
+    overflow: visible;
   }
 
   .role-card text:first-child {
+    display: block;
+    height: 52rpx;
+    line-height: 52rpx;
     font-size: 48rpx;
   }
 
@@ -320,7 +327,9 @@
   }
 
   .role-name {
-    margin-top: 16rpx;
+    display: block;
+    height: 36rpx;
+    line-height: 36rpx;
     font-size: 28rpx;
     font-weight: 700;
   }
