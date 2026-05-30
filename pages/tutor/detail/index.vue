@@ -923,17 +923,23 @@
   .minor-btn {
     width: 96rpx;
     height: 88rpx;
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     color: #64748b;
     font-size: 20rpx;
+    line-height: 1;
   }
 
   .minor-btn text:first-child {
     margin-bottom: 6rpx;
     font-size: 34rpx;
+  }
+
+  .minor-btn text:last-child {
+    line-height: 28rpx;
   }
 
   .minor-btn.active {
