@@ -40,7 +40,7 @@ const user = defineStore({
         return this.tutorProfile;
       }
       uni.setStorageSync('tutor_profile', profile);
-      if (profile.cityCode) {
+      if (profile.cityCode && !uni.getStorageSync('tutor_city')) {
         uni.setStorageSync('tutor_city', {
           id: profile.cityId,
           code: profile.cityCode,

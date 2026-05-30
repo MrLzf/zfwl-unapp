@@ -305,7 +305,7 @@
       return;
     }
     state.profile = await userStore.getTutorProfile();
-    if (state.profile?.cityCode) {
+    if (!state.city?.code && state.profile?.cityCode) {
       state.city = {
         id: state.profile.cityId,
         code: state.profile.cityCode,
