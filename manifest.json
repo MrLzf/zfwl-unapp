@@ -68,7 +68,10 @@
         "schemes": "tutor"
       },
       "ios": {
-        "urlschemewhitelist": ["baidumap", "iosamap"],
+        "urlschemewhitelist": [
+          "baidumap",
+          "iosamap"
+        ],
         "dSYMs": false,
         "privacyDescription": {
           "NSPhotoLibraryUsageDescription": "需要同意访问您的相册选取图片才能完善该条目",
@@ -96,12 +99,18 @@
         },
         "payment": {
           "weixin": {
-            "__platform__": ["ios", "android"],
+            "__platform__": [
+              "ios",
+              "android"
+            ],
             "appid": "wxc9d15fc56da672b0",
             "UniversalLinks": ""
           },
           "alipay": {
-            "__platform__": ["ios", "android"]
+            "__platform__": [
+              "ios",
+              "android"
+            ]
           }
         },
         "share": {
@@ -111,7 +120,9 @@
           }
         }
       },
-      "orientation": ["portrait-primary"],
+      "orientation": [
+        "portrait-primary"
+      ],
       "splashscreen": {
         "androidStyle": "common",
         "iosStyle": "common",
@@ -169,7 +180,7 @@
     "versionCode": 100
   },
   "mp-weixin": {
-    "appid": "wx66186af0759f47c9",
+    "appid": "wxc9d15fc56da672b0",
     "setting": {
       "urlCheck": false,
       "minified": true,
@@ -186,7 +197,10 @@
         "desc": "用于获取当前位置，计算家教信息与您的距离"
       }
     },
-    "requiredPrivateInfos": ["chooseAddress", "getLocation"]
+    "requiredPrivateInfos": [
+      "chooseAddress",
+      "getLocation"
+    ]
   },
   "mp-alipay": {
     "usingComponents": true,
