@@ -332,19 +332,50 @@
       uni.showToast({ title: '最多保留3条有效发布', icon: 'none' });
       return false;
     }
-    if (!form.title.trim() || !form.subjects.trim()) {
-      uni.showToast({ title: '请完善标题和科目', icon: 'none' });
+    if (!form.title.trim()) {
+      uni.showToast({ title: '请填写标题', icon: 'none' });
+      return false;
+    }
+    if (!form.subjects.trim()) {
+      uni.showToast({
+        title: postType.value === 'parent' ? '请选择科目' : '请填写授课科目',
+        icon: 'none',
+      });
+      return false;
+    }
+    if (!form.contactMobile.trim()) {
+      uni.showToast({ title: '请填写手机号', icon: 'none' });
       return false;
     }
     if (!mobileValid(form.contactMobile)) {
-      uni.showToast({ title: '请填写正确手机号', icon: 'none' });
+      uni.showToast({ title: '请输入正确的手机号', icon: 'none' });
       return false;
     }
     if (postType.value === 'parent') {
+      if (!form.grade) {
+        uni.showToast({ title: '请选择年级', icon: 'none' });
+        return false;
+      }
+      if (form.budgetMin === '') {
+        uni.showToast({ title: '请填写最低预算', icon: 'none' });
+        return false;
+      }
+      if (form.budgetMax === '') {
+        uni.showToast({ title: '请填写最高预算', icon: 'none' });
+        return false;
+      }
       const min = Number(form.budgetMin);
       const max = Number(form.budgetMax);
-      if (!form.grade || Number.isNaN(min) || Number.isNaN(max) || min < 0 || max < min) {
-        uni.showToast({ title: '请完善年级和预算范围', icon: 'none' });
+      if (Number.isNaN(min) || Number.isNaN(max)) {
+        uni.showToast({ title: '请输入正确的预算金额', icon: 'none' });
+        return false;
+      }
+      if (min < 0) {
+        uni.showToast({ title: '最低预算不能小于 0', icon: 'none' });
+        return false;
+      }
+      if (max < min) {
+        uni.showToast({ title: '最高预算不能低于最低预算', icon: 'none' });
         return false;
       }
       if (!form.description.trim()) {
@@ -353,10 +384,22 @@
       }
       return true;
     }
+    if (form.hourlyPrice === '') {
+      uni.showToast({ title: '请填写时薪', icon: 'none' });
+      return false;
+    }
     const hourlyPrice = Number(form.hourlyPrice);
+    if (Number.isNaN(hourlyPrice) || hourlyPrice <= 0) {
+      uni.showToast({ title: '请输入正确的时薪', icon: 'none' });
+      return false;
+    }
+    if (form.serviceRadiusKm === '') {
+      uni.showToast({ title: '请填写服务半径', icon: 'none' });
+      return false;
+    }
     const radius = Number(form.serviceRadiusKm);
-    if (Number.isNaN(hourlyPrice) || hourlyPrice <= 0 || Number.isNaN(radius) || radius < 0) {
-      uni.showToast({ title: '请填写正确时薪和服务半径', icon: 'none' });
+    if (Number.isNaN(radius) || radius < 0) {
+      uni.showToast({ title: '请输入正确的服务半径', icon: 'none' });
       return false;
     }
     if (!form.description.trim()) {
