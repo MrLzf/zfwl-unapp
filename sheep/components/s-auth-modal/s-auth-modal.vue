@@ -97,7 +97,7 @@
             <view class="radio ss-flex ss-col-center" @tap="onAgree">
               <radio
                 :checked="state.protocol === true"
-                color="var(--ui-BG-Main)"
+                color="#2563eb"
                 style="transform: scale(0.8)"
                 @tap.stop="onAgree"
               />
