@@ -90,14 +90,14 @@
         "oauth": {
           "apple": {},
           "weixin": {
-            "appid": "wxae7a0c156da9383b",
+            "appid": "wxc9d15fc56da672b0",
             "UniversalLinks": ""
           }
         },
         "payment": {
           "weixin": {
             "__platform__": ["ios", "android"],
-            "appid": "wxae7a0c156da9383b",
+            "appid": "wxc9d15fc56da672b0",
             "UniversalLinks": ""
           },
           "alipay": {
@@ -106,7 +106,7 @@
         },
         "share": {
           "weixin": {
-            "appid": "wxae7a0c156da9383b",
+            "appid": "wxc9d15fc56da672b0",
             "UniversalLinks": ""
           }
         }

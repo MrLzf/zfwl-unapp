@@ -129,12 +129,13 @@
 
   .tabbar-item {
     min-width: 0;
+    width: 100%;
     height: 112rpx;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 80rpx 28rpx;
     align-items: center;
-    justify-content: flex-start;
-    gap: 4rpx;
+    justify-items: center;
     color: var(--tabbar-inactive-color);
     font-size: 22rpx;
     line-height: 1;
@@ -145,8 +146,8 @@
   }
 
   .tabbar-icon {
-    height: 46rpx;
-    line-height: 46rpx;
+    height: 80rpx;
+    line-height: 80rpx;
     font-size: 44rpx;
   }
 
@@ -158,7 +159,6 @@
 
   .tabbar-item.center {
     position: relative;
-    gap: 2rpx;
     overflow: visible;
   }
 
@@ -168,14 +168,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 0;
-    margin-bottom: 2rpx;
     border-radius: 50%;
     color: #fff;
     background: var(--tabbar-active-color);
     border: 6rpx solid #fff;
     box-shadow: 0 12rpx 28rpx rgba(37, 99, 235, 0.35);
     box-sizing: border-box;
+    transform: translateY(-28rpx);
   }
 
   .center-bubble text {
