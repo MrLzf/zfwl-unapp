@@ -19,7 +19,7 @@
 
     <view class="guide-card">
       <view>
-        <view class="guide-title">P0 获取方式</view>
+        <view class="guide-title">积分获取方式</view>
         <view class="guide-desc">每日签到、完善资料、五星评价奖励、后台人工充值。</view>
       </view>
       <button class="guide-btn ss-reset-button" @tap="goService">充值/客服</button>
@@ -282,6 +282,8 @@
   }
 
   .guide-card {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: space-between;
