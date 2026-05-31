@@ -113,6 +113,9 @@
                 <text>/时</text>
               </view>
             </view>
+            <view v-if="item.type === 'req' && item.address" class="result-desc">
+              上课地址：{{ item.address }}
+            </view>
             <view class="result-desc">{{ item.description }}</view>
             <view class="result-foot">
               <view class="mini-user">

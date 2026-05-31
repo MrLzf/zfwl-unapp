@@ -52,6 +52,9 @@
         </view>
 
         <view class="desc" @tap="goDetail(item)">{{ item.description }}</view>
+        <view v-if="item.type === 'req' && item.address" class="desc" @tap="goDetail(item)">
+          上课地址：{{ item.address }}
+        </view>
 
         <view v-if="item.rejectReason" class="reject-reason">
           拒绝原因：{{ item.rejectReason }}

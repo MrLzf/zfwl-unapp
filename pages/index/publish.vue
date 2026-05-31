@@ -105,6 +105,15 @@
             </view>
           </label>
 
+          <label v-if="postType === 'parent' && form.teachMode !== 2" class="field">
+            <text>上课地址</text>
+            <input
+              v-model="form.address"
+              placeholder="请输入详细上课地址，如小区、街道或附近地标"
+              maxlength="255"
+            />
+          </label>
+
           <label v-if="postType === 'parent'" class="field">
             <text>预算范围（元/小时）</text>
             <view class="budget-row">
@@ -217,6 +226,7 @@
     grade: '',
     subjects: '',
     teachMode: 3,
+    address: '',
     budgetMin: '',
     budgetMax: '',
     hourlyPrice: '',
@@ -263,6 +273,7 @@
     form.grade = '';
     form.subjects = '';
     form.teachMode = 3;
+    form.address = '';
     form.budgetMin = '';
     form.budgetMax = '';
     form.hourlyPrice = '';
@@ -353,6 +364,10 @@
       return false;
     }
     if (postType.value === 'parent') {
+      if (form.teachMode !== 2 && !form.address.trim()) {
+        uni.showToast({ title: '请输入上课地址', icon: 'none' });
+        return false;
+      }
       if (!form.grade) {
         uni.showToast({ title: '请选择年级', icon: 'none' });
         return false;
@@ -442,6 +457,7 @@
             ...common,
             grade: form.grade,
             teachMode: form.teachMode,
+            address: form.teachMode === 2 ? '' : form.address.trim(),
             budgetMin: Number(form.budgetMin),
             budgetMax: Number(form.budgetMax),
             description: form.description.trim(),

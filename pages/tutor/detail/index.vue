@@ -70,6 +70,10 @@
                     : detail.frequency
                 }}</text>
               </view>
+              <view v-if="!isTutor && detail.address" class="info-item">
+                <text class="info-label">上课地址</text>
+                <text class="info-value">{{ detail.address }}</text>
+              </view>
             </view>
           </view>
 

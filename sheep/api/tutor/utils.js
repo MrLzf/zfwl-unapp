@@ -273,6 +273,7 @@ export function normalizeDemand(item = {}, index = 0) {
     frequency: item.frequency || '频次面议',
     createdAt: item.createdAt || item.createTime || '刚刚',
     district: item.district || item.cityName || item.city || '同城',
+    address: item.address || '',
     verified: item.verified ?? true,
     urgent: item.urgent ?? false,
     contactName: item.contactName || item.parentName || '联系人',
