@@ -100,6 +100,7 @@
       return {
         ...normalizeResume(source, index),
         ...item,
+        historyId: item.id,
         id: item.targetId || item.id,
         targetType,
         key: targetKey(targetType, item.targetId || item.id),
@@ -113,6 +114,7 @@
     return {
       ...normalizeDemand(source, index),
       ...item,
+      historyId: item.id,
       id: item.targetId || item.id,
       targetType,
       key: targetKey(targetType, item.targetId || item.id),
@@ -125,15 +127,21 @@
     const result = await TutorInteractionApi.getBrowseHistoryList();
     if (result?.code === 0) {
       const remote = (result.data || []).map(normalizeHistory);
-      const map = new Map([...remote, ...localItems].map((item) => [item.key, item]));
-      state.items = [...map.values()];
+      state.items = remote;
     } else {
       state.items = localItems;
     }
     state.loading = false;
   }
 
-  function remove(item) {
+  async function remove(item) {
+    if (isNumericId(item.historyId)) {
+      const result = await TutorInteractionApi.removeBrowseHistory(item.historyId);
+      if (result?.code !== 0) {
+        uni.showToast({ title: result?.msg || '删除失败', icon: 'none' });
+        return;
+      }
+    }
     state.items = state.items.filter((record) => record.key !== item.key);
     const localLeft = getLocalHistory().filter((record) => record.key !== item.key);
     uni.setStorageSync('tutor_local_history', localLeft);
@@ -143,10 +151,15 @@
   function clear() {
     uni.showModal({
       title: '清空浏览历史',
-      content: '清空后本地浏览记录将不可恢复。',
+      content: '清空后浏览记录将不可恢复。',
       confirmText: '清空',
-      success: (res) => {
+      success: async (res) => {
         if (!res.confirm) return;
+        const result = await TutorInteractionApi.clearBrowseHistory();
+        if (result?.code !== 0) {
+          uni.showToast({ title: result?.msg || '清空失败', icon: 'none' });
+          return;
+        }
         clearLocalHistory();
         state.items = [];
         uni.showToast({ title: '已清空', icon: 'none' });

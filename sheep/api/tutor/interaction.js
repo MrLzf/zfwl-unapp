@@ -45,6 +45,20 @@ const TutorInteractionApi = {
       custom: authSilent,
     });
   },
+  removeBrowseHistory: (id) => {
+    return request({
+      url: `/tutor/browse-history/${id}`,
+      method: 'DELETE',
+      custom: authSilent,
+    });
+  },
+  clearBrowseHistory: () => {
+    return request({
+      url: '/tutor/browse-history/my',
+      method: 'DELETE',
+      custom: authSilent,
+    });
+  },
   viewContact: (data) => {
     return request({
       url: '/tutor/contact/view',
