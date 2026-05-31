@@ -187,6 +187,7 @@
   import sheep from '@/sheep';
   import { showAuthModal } from '@/sheep/hooks/useModal';
   import TutorMarketApi from '@/sheep/api/tutor/market';
+  import { getLocationPayload } from '@/sheep/api/tutor/location';
   import { tutorRequests, tutorTeachers } from '@/sheep/api/tutor/mock-data';
   import {
     TUTOR_ROLE,
@@ -315,7 +316,7 @@
   }
 
   async function loadRecommendations() {
-    const location = uni.getStorageSync('tutor_location') || {};
+    const location = getLocationPayload(state.city);
     const params = {
       pageNo: 1,
       pageSize: 6,

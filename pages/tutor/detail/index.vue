@@ -265,6 +265,7 @@
   import { showAuthModal } from '@/sheep/hooks/useModal';
   import TutorMarketApi from '@/sheep/api/tutor/market';
   import TutorInteractionApi from '@/sheep/api/tutor/interaction';
+  import { getLocationPayload } from '@/sheep/api/tutor/location';
   import {
     addLocalFavorite,
     addLocalReview,
@@ -396,10 +397,10 @@
       let loaded = null;
       if (isNumericId(state.id)) {
         const city = uni.getStorageSync('tutor_city') || {};
-        const location = uni.getStorageSync('tutor_location') || {};
+        const location = getLocationPayload(city);
         const result = await TutorMarketApi.getDetail(state.targetType, state.id, {
-          longitude: location.longitude || city.longitude,
-          latitude: location.latitude || city.latitude,
+          longitude: location.longitude,
+          latitude: location.latitude,
         });
         if (result?.code === 0) {
           loaded = normalizeDetailPayload(result.data);

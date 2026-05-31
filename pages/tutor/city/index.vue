@@ -83,6 +83,11 @@
   import { onLoad } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
   import TutorCityApi from '@/sheep/api/tutor/city';
+  import {
+    getLocationPayload,
+    requestTencentLocation,
+    setCachedLocation,
+  } from '@/sheep/api/tutor/location';
   import TutorProfileApi from '@/sheep/api/tutor/profile';
   import { fallbackTutorCities, nearestCityByLocation } from '@/sheep/api/tutor/utils';
 
@@ -179,12 +184,12 @@
     if (!userStore.isLogin || !userStore.tutorProfile?.role) {
       return;
     }
-    const location = uni.getStorageSync('tutor_location') || {};
     const profile = userStore.tutorProfile || {};
+    const location = getLocationPayload(profile);
     const result = await TutorProfileApi.updateLocation({
       cityCode: selected.code,
-      longitude: location.longitude || profile.longitude,
-      latitude: location.latitude || profile.latitude,
+      longitude: location.longitude,
+      latitude: location.latitude,
       locationAddress: selected.name,
     });
     if (result?.code === 0) {
@@ -231,40 +236,37 @@
     }, 300);
   }
 
-  function locateCity() {
+  async function locateCity() {
     state.locating = true;
-    uni.getLocation({
-      type: 'gcj02',
-      success: (res) => {
-        const matched =
-          nearestCityByLocation(state.cities, res.longitude, res.latitude) ||
-          state.cities.find((city) => city.opened);
-        if (!matched) {
-          uni.showToast({ title: '暂未匹配到开通城市', icon: 'none' });
-          return;
-        }
-        state.locatedCity = matched;
-        uni.setStorageSync('tutor_located_city', matched);
-        uni.setStorageSync('tutor_location', {
-          longitude: res.longitude,
-          latitude: res.latitude,
-        });
-        if (!state.currentCity?.code && matched.opened) {
-          state.currentCity = matched;
-          uni.setStorageSync('tutor_city', matched);
-        }
-        uni.showToast({ title: `定位到${matched.name}`, icon: 'none' });
-      },
-      fail: () => {
-        uni.showToast({
-          title: '定位授权失败，请手动选择城市',
-          icon: 'none',
-        });
-      },
-      complete: () => {
-        state.locating = false;
-      },
-    });
+    try {
+      const location = await requestTencentLocation();
+      const matched =
+        nearestCityByLocation(state.cities, location.longitude, location.latitude) ||
+        state.cities.find((city) => city.opened);
+      if (!matched) {
+        uni.showToast({ title: '暂未匹配到开通城市', icon: 'none' });
+        return;
+      }
+      state.locatedCity = matched;
+      uni.setStorageSync('tutor_located_city', matched);
+      setCachedLocation({
+        ...location,
+        cityCode: matched.code,
+        cityName: matched.name,
+      });
+      if (!state.currentCity?.code && matched.opened) {
+        state.currentCity = matched;
+        uni.setStorageSync('tutor_city', matched);
+      }
+      uni.showToast({ title: `定位到${matched.name}`, icon: 'none' });
+    } catch (error) {
+      uni.showToast({
+        title: '定位授权失败，请手动选择城市',
+        icon: 'none',
+      });
+    } finally {
+      state.locating = false;
+    }
   }
 
   onLoad(async () => {

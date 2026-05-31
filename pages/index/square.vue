@@ -151,6 +151,7 @@
   import sheep from '@/sheep';
   import { showAuthModal } from '@/sheep/hooks/useModal';
   import TutorMarketApi from '@/sheep/api/tutor/market';
+  import { getCachedLocation, getLocationPayload } from '@/sheep/api/tutor/location';
   import { tutorItems, tutorSubjects } from '@/sheep/api/tutor/mock-data';
   import {
     formatDistance,
@@ -308,6 +309,7 @@
   function buildParams(targetType) {
     const advanced = filters.value || {};
     const currentCity = city.value || {};
+    const location = getLocationPayload(currentCity);
     const distanceKm =
       activeDistance.value !== 999
         ? activeDistance.value
@@ -327,14 +329,17 @@
       certified: targetType === 'tutor' ? advanced.certified || undefined : undefined,
       freeTrialEnabled: targetType === 'tutor' ? advanced.freeTrialEnabled || undefined : undefined,
       sortType: activeSort.value !== 'default' ? activeSort.value : advanced.sortType,
-      longitude: currentCity.longitude,
-      latitude: currentCity.latitude,
+      longitude: location.longitude,
+      latitude: location.latitude,
     };
   }
 
   function getQueryKey() {
+    const location = getCachedLocation();
     return JSON.stringify({
       city: city.value?.code,
+      longitude: location.longitude,
+      latitude: location.latitude,
       filters: filters.value,
       type: activeType.value,
       subject: activeSubject.value,

@@ -92,6 +92,7 @@
   import { computed, reactive } from 'vue';
   import { onShow } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
+  import { requestTencentLocation, setCachedLocation } from '@/sheep/api/tutor/location';
   import TutorProfileApi from '@/sheep/api/tutor/profile';
   import { TUTOR_ROLE } from '@/sheep/api/tutor/utils';
 
@@ -189,36 +190,34 @@
     });
   }
 
-  function updateLocation() {
+  async function updateLocation() {
     if (!state.profile) {
       return;
     }
-    uni.getLocation({
-      type: 'gcj02',
-      success: async (res) => {
-        uni.setStorageSync('tutor_location', {
-          longitude: res.longitude,
-          latitude: res.latitude,
-        });
-        const result = await TutorProfileApi.updateLocation({
-          cityCode: state.city?.code || state.profile.cityCode,
-          longitude: res.longitude,
-          latitude: res.latitude,
-          locationAddress: state.city?.name || '',
-        });
-        if (result?.code !== 0) {
-          return;
-        }
-        state.profile = result.data;
-        userStore.setTutorProfile(result.data);
-      },
-      fail: () => {
-        uni.showToast({
-          title: '定位授权失败',
-          icon: 'none',
-        });
-      },
-    });
+    try {
+      const location = await requestTencentLocation();
+      setCachedLocation({
+        ...location,
+        cityCode: state.city?.code || state.profile.cityCode,
+        cityName: state.city?.name || state.profile.cityName,
+      });
+      const result = await TutorProfileApi.updateLocation({
+        cityCode: state.city?.code || state.profile.cityCode,
+        longitude: location.longitude,
+        latitude: location.latitude,
+        locationAddress: state.city?.name || '',
+      });
+      if (result?.code !== 0) {
+        return;
+      }
+      state.profile = result.data;
+      userStore.setTutorProfile(result.data);
+    } catch (error) {
+      uni.showToast({
+        title: '定位授权失败',
+        icon: 'none',
+      });
+    }
   }
 
   onShow(() => {

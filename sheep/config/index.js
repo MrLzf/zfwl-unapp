@@ -20,6 +20,7 @@ export const staticUrl = import.meta.env.TUTOR_STATIC_URL;
 export const tenantId = import.meta.env.TUTOR_TENANT_ID;
 export const websocketPath = import.meta.env.TUTOR_WEBSOCKET_PATH;
 export const h5Url = import.meta.env.TUTOR_H5_URL;
+export const tencentMapKey = import.meta.env.TUTOR_TENCENT_MAP_KEY;
 
 export default {
   baseUrl,
@@ -28,4 +29,5 @@ export default {
   tenantId,
   websocketPath,
   h5Url,
+  tencentMapKey,
 };

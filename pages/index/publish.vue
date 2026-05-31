@@ -186,6 +186,7 @@
   import sheep from '@/sheep';
   import { showAuthModal } from '@/sheep/hooks/useModal';
   import TutorCertificationApi from '@/sheep/api/tutor/certification';
+  import { getLocationPayload as getCachedLocationPayload } from '@/sheep/api/tutor/location';
   import TutorPostApi from '@/sheep/api/tutor/post';
   import {
     TUTOR_AUDIT_STATUS,
@@ -414,7 +415,7 @@
   }
 
   function getLocationPayload() {
-    const location = uni.getStorageSync('tutor_location') || {};
+    const location = getCachedLocationPayload(state.city);
     return {
       cityCode: state.city.code,
       longitude: location.longitude,

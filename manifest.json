@@ -181,8 +181,12 @@
     "plugins": {},
     "lazyCodeLoading": "requiredComponents",
     "usingComponents": {},
-    "permission": {},
-    "requiredPrivateInfos": ["chooseAddress"]
+    "permission": {
+      "scope.userLocation": {
+        "desc": "用于获取当前位置，计算家教信息与您的距离"
+      }
+    },
+    "requiredPrivateInfos": ["chooseAddress", "getLocation"]
   },
   "mp-alipay": {
     "usingComponents": true,
@@ -205,7 +209,14 @@
       "base": "/"
     },
     "sdkConfigs": {
-      "maps": {}
+      "maps": {
+        "qqmap": {
+          "key": "%TUTOR_TENCENT_MAP_KEY%"
+        },
+        "tencent": {
+          "key": "%TUTOR_TENCENT_MAP_KEY%"
+        }
+      }
     },
     "async": {
       "timeout": 20000
