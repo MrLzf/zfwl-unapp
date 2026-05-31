@@ -238,6 +238,21 @@ export function formatDistance(distance) {
   return `${value.toFixed(1)}km`;
 }
 
+export function formatPriceRange(min, max, fallback) {
+  const hasMin = min !== undefined && min !== null && min !== '';
+  const hasMax = max !== undefined && max !== null && max !== '';
+  if (hasMin && hasMax && String(min) !== String(max)) {
+    return `¥${min}-${max}`;
+  }
+  if (hasMin || hasMax) {
+    return `¥${hasMin ? min : max}`;
+  }
+  if (fallback !== undefined && fallback !== null && fallback !== '') {
+    return `¥${fallback}`;
+  }
+  return '价格面议';
+}
+
 export function normalizeDemand(item = {}, index = 0) {
   const subjects = toSubjectList(item.subjects || item.subject);
   const budget = item.budget || item.budgetMax || item.budgetMin || item.price || 0;

@@ -40,8 +40,8 @@
             </view>
             <view class="price-line">
               <view>
-                <text class="price">¥{{ detail.budget || detail.price }}</text>
-                <text class="price-unit">/小时</text>
+                <text class="price">{{ priceText }}</text>
+                <text v-if="priceText !== '价格面议'" class="price-unit">/小时</text>
               </view>
               <text class="role-tag">{{ isTutor ? '老师简历' : '家长需求' }}</text>
             </view>
@@ -77,7 +77,7 @@
             <view class="panel-head">
               <view class="panel-title">联系方式</view>
               <text class="unlock-tag" :class="{ active: state.contactUnlocked }">
-                {{ state.contactUnlocked ? '已解锁' : '默认脱敏' }}
+                {{ isOwner ? '本人发布' : state.contactUnlocked ? '已解锁' : '默认脱敏' }}
               </text>
             </view>
             <view class="contact-row">
@@ -94,7 +94,7 @@
                 <view class="contact-value">{{ contactPreview.wechat }}</view>
               </view>
             </view>
-            <view v-if="!state.contactUnlocked" class="contact-tip">
+            <view v-if="!isOwner && !state.contactUnlocked" class="contact-tip">
               查看完整联系方式需扣除 10 积分，30 天内复看免费。
             </view>
           </view>
@@ -122,7 +122,7 @@
         </block>
       </scroll-view>
 
-      <view v-if="!state.errorMsg" class="action-bar">
+      <view v-if="!isOwner && !state.errorMsg" class="action-bar">
         <button
           class="minor-btn ss-reset-button"
           :class="{ active: state.isFavorited }"
@@ -283,6 +283,7 @@
   } from '@/sheep/api/tutor/local-state';
   import {
     formatDistance,
+    formatPriceRange,
     modeText,
     normalizeDemand,
     normalizeResume,
@@ -320,6 +321,21 @@
   const isLogin = computed(() => userStore.isLogin);
   const detail = computed(() => state.detail || {});
   const isTutor = computed(() => state.targetType === 'resume' || state.detail?.type === 'tutor');
+  const isOwner = computed(
+    () =>
+      detail.value.userId &&
+      userStore.tutorProfile?.userId &&
+      String(detail.value.userId) === String(userStore.tutorProfile?.userId),
+  );
+  const priceText = computed(() =>
+    isTutor.value
+      ? formatPriceRange(
+          detail.value.hourlyPriceMin,
+          detail.value.hourlyPriceMax,
+          detail.value.price,
+        )
+      : formatPriceRange(detail.value.budgetMin, detail.value.budgetMax, detail.value.budget),
+  );
   const pointBalance = computed(() => {
     if (state.usingLocal || !isNumericId(state.id)) {
       return getLocalPoints();
@@ -327,7 +343,7 @@
     return userStore.userInfo?.point ?? getLocalPoints();
   });
   const contactPreview = computed(() => {
-    if (state.contactUnlocked && state.contact) {
+    if ((isOwner.value || state.contactUnlocked) && state.contact) {
       return {
         mobile: state.contact.mobile || state.detail.fullPhone || state.detail.contactPhone,
         wechat:
