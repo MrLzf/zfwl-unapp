@@ -12,135 +12,134 @@
         </button>
       </view>
 
-      <view class="filter-card">
-        <view class="search-box">
-          <text class="cicon-search"></text>
-          <input
-            v-model="keyword"
-            placeholder="搜索科目、年级、区域"
-            confirm-type="search"
-            @confirm="reload"
-          />
+      <view v-if="!isLogin" class="login-gate">
+        <view class="gate-icon"><text class="cicon-lock"></text></view>
+        <view class="gate-title">登录后查看同城家教信息</view>
+        <view class="gate-desc">登录后可根据您的身份查看老师简历或家长需求。</view>
+        <button class="state-btn ss-reset-button" @tap="showLogin">立即登录 / 注册</button>
+      </view>
+
+      <template v-else-if="!profile?.role">
+        <view class="login-gate">
+          <view class="gate-icon"><text class="cicon-my"></text></view>
+          <view class="gate-title">先选择身份</view>
+          <view class="gate-desc">家长可查看老师列表，教师可查看家教需求列表。</view>
+          <button class="state-btn ss-reset-button" @tap="goIdentity">去选择身份</button>
+        </view>
+      </template>
+
+      <template v-else>
+        <view class="filter-card">
+          <view class="search-box">
+            <text class="cicon-search"></text>
+            <input
+              v-model="keyword"
+              placeholder="搜索科目、年级、区域"
+              confirm-type="search"
+              @confirm="reload"
+            />
+          </view>
+
+          <view class="dropdown-row">
+            <button class="dropdown-btn ss-reset-button" @tap="openPicker('subject')">
+              {{ activeSubject || '学科' }}
+              <text class="cicon-drop-down"></text>
+            </button>
+            <button class="dropdown-btn ss-reset-button" @tap="openPicker('distance')">
+              {{ distanceText }}
+              <text class="cicon-drop-down"></text>
+            </button>
+            <button class="dropdown-btn ss-reset-button" @tap="openPicker('sort')">
+              {{ sortText }}
+              <text class="cicon-drop-down"></text>
+            </button>
+            <button
+              class="advanced-btn ss-reset-button"
+              :class="{ active: activeFilterCount }"
+              @tap="goFilter"
+            >
+              <text class="cicon-filter"></text>
+              <text>筛选</text>
+              <text v-if="activeFilterCount" class="filter-count">{{ activeFilterCount }}</text>
+            </button>
+          </view>
         </view>
 
-        <view class="dropdown-row">
-          <button class="dropdown-btn ss-reset-button" @tap="openPicker('subject')">
-            {{ activeSubject || '学科' }}
-            <text class="cicon-drop-down"></text>
-          </button>
-          <button class="dropdown-btn ss-reset-button" @tap="openPicker('distance')">
-            {{ distanceText }}
-            <text class="cicon-drop-down"></text>
-          </button>
-          <button class="dropdown-btn ss-reset-button" @tap="openPicker('sort')">
-            {{ sortText }}
-            <text class="cicon-drop-down"></text>
-          </button>
-          <button
-            class="advanced-btn ss-reset-button"
-            :class="{ active: activeFilterCount }"
-            @tap="goFilter"
+        <view v-if="state.usingMock && displayItems.length" class="offline-tip">
+          当前展示本地示例数据，服务恢复后会自动同步最新信息。
+        </view>
+
+        <view v-if="state.errorMsg && !displayItems.length" class="state-card">
+          <view class="state-icon danger"><text class="cicon-warn"></text></view>
+          <view class="state-title">加载失败</view>
+          <view class="state-desc">{{ state.errorMsg }}</view>
+          <button class="state-btn ss-reset-button" @tap="reload">重新加载</button>
+        </view>
+
+        <view v-else-if="state.loading && !displayItems.length" class="skeleton-list">
+          <view v-for="item in 4" :key="item" class="skeleton-card"></view>
+        </view>
+
+        <view v-else-if="displayItems.length" class="list">
+          <view
+            v-for="(item, index) in displayItems"
+            :key="`${item.type}-${item.id}-${index}`"
+            class="result-card"
+            :class="{ urgent: item.urgent }"
+            @tap="goDetail(item)"
           >
-            <text class="cicon-filter"></text>
-            <text>筛选</text>
-            <text v-if="activeFilterCount" class="filter-count">{{ activeFilterCount }}</text>
-          </button>
-        </view>
-      </view>
-
-      <view class="type-tabs">
-        <button
-          v-for="type in types"
-          :key="type.value"
-          class="type-tab ss-reset-button"
-          :class="{ active: activeType === type.value }"
-          @tap="changeType(type.value)"
-        >
-          {{ type.label }}
-        </button>
-      </view>
-
-      <view v-if="state.usingMock && displayItems.length" class="offline-tip">
-        当前展示本地示例数据，服务恢复后会自动同步最新信息。
-      </view>
-
-      <view v-if="state.errorMsg && !displayItems.length" class="state-card">
-        <view class="state-icon danger"><text class="cicon-warn"></text></view>
-        <view class="state-title">加载失败</view>
-        <view class="state-desc">{{ state.errorMsg }}</view>
-        <button class="state-btn ss-reset-button" @tap="reload">重新加载</button>
-      </view>
-
-      <view v-else-if="state.loading && !displayItems.length" class="skeleton-list">
-        <view v-for="item in 4" :key="item" class="skeleton-card"></view>
-      </view>
-
-      <view v-else-if="displayItems.length" class="list">
-        <view
-          v-for="(item, index) in limitedItems"
-          :key="`${item.type}-${item.id}-${index}`"
-          class="result-card"
-          :class="{ urgent: item.urgent }"
-          @tap="goDetail(item)"
-        >
-          <view class="result-top">
-            <image class="avatar" :src="item.avatar" mode="aspectFill" />
-            <view class="result-main">
-              <view class="title-row">
-                <text class="result-title">{{
-                  item.type === 'tutor' ? item.name : item.title
-                }}</text>
-                <text v-if="item.urgent" class="urgent-tag">加急</text>
-                <text v-if="item.verified" class="verify-tag">认证</text>
+            <view class="result-top">
+              <image class="avatar" :src="item.avatar" mode="aspectFill" />
+              <view class="result-main">
+                <view class="title-row">
+                  <text class="result-title">{{
+                    item.type === 'tutor' ? item.name : item.title
+                  }}</text>
+                  <text v-if="item.urgent" class="urgent-tag">加急</text>
+                  <text v-if="item.verified" class="verify-tag">认证</text>
+                </view>
+                <view class="result-meta">
+                  {{ item.district }} · {{ formatDistance(item.distance) }} ·
+                  {{ modeText(item.mode) }}
+                </view>
+                <view class="tag-row">
+                  <text>{{ item.grade || item.education }}</text>
+                  <text v-for="subject in item.subjects" :key="subject">{{ subject }}</text>
+                  <text v-if="item.hasFreeTrial">试课</text>
+                </view>
               </view>
-              <view class="result-meta">
-                {{ item.district }} · {{ formatDistance(item.distance) }} ·
-                {{ modeText(item.mode) }}
-              </view>
-              <view class="tag-row">
-                <text>{{ item.grade || item.education }}</text>
-                <text v-for="subject in item.subjects" :key="subject">{{ subject }}</text>
-                <text v-if="item.hasFreeTrial">试课</text>
+              <view class="price">
+                <text>¥{{ item.budget || item.price }}</text>
+                <text>/时</text>
               </view>
             </view>
-            <view class="price">
-              <text>¥{{ item.budget || item.price }}</text>
-              <text>/时</text>
-            </view>
-          </view>
-          <view class="result-desc">{{ item.description }}</view>
-          <view class="result-foot">
-            <view class="mini-user">
-              <text class="cicon-time"></text>
-              <text>{{ item.createdAt }}</text>
-            </view>
-            <view class="mini-user">
-              <text class="cicon-location-on"></text>
-              <text>{{ item.city || city.name || '同城' }}</text>
+            <view class="result-desc">{{ item.description }}</view>
+            <view class="result-foot">
+              <view class="mini-user">
+                <text class="cicon-time"></text>
+                <text>{{ item.createdAt }}</text>
+              </view>
+              <view class="mini-user">
+                <text class="cicon-location-on"></text>
+                <text>{{ item.city || city.name || '同城' }}</text>
+              </view>
             </view>
           </view>
         </view>
 
-        <view v-if="!isLogin && displayItems.length > limitedItems.length" class="login-gate">
-          <view class="gate-icon"><text class="cicon-lock"></text></view>
-          <view class="gate-title">登录后查看更多</view>
-          <view class="gate-desc">优质教师和家长需求每日更新，登录后可继续浏览和收藏。</view>
-          <button class="state-btn ss-reset-button" @tap="showLogin">立即登录 / 注册</button>
-        </view>
-      </view>
+        <s-empty v-else text="暂无符合条件的信息" icon="/static/data-empty.png" />
 
-      <s-empty v-else text="暂无符合条件的信息" icon="/static/data-empty.png" />
-
-      <uni-load-more
-        v-if="displayItems.length && isLogin"
-        :status="state.loadStatus"
-        :content-text="{
-          contentdown: '上拉加载更多',
-          contentrefresh: '加载中',
-          contentnomore: '没有更多了',
-        }"
-        @tap="loadMore"
-      />
+        <uni-load-more
+          v-if="displayItems.length"
+          :status="state.loadStatus"
+          :content-text="{
+            contentdown: '上拉加载更多',
+            contentrefresh: '加载中',
+            contentnomore: '没有更多了',
+          }"
+          @tap="loadMore"
+        />
+      </template>
     </view>
   </s-layout>
 </template>
@@ -165,10 +164,11 @@
 
   const userStore = sheep.$store('user');
   const isLogin = computed(() => userStore.isLogin);
+  const profile = computed(() => userStore.tutorProfile);
   const isTeacher = computed(() => userStore.tutorProfile?.role === TUTOR_ROLE.TEACHER);
+  const targetType = computed(() => (isTeacher.value ? 'req' : 'tutor'));
 
   const keyword = ref('');
-  const activeType = ref('all');
   const activeSubject = ref('');
   const activeDistance = ref(999);
   const activeSort = ref('default');
@@ -187,17 +187,7 @@
     usingMock: false,
   });
 
-  const types = [
-    { label: '全部', value: 'all' },
-    { label: '找老师', value: 'tutor' },
-    { label: '找家长', value: 'req' },
-  ];
-
-  const pageTitle = computed(() => {
-    if (activeType.value === 'tutor') return '老师广场';
-    if (activeType.value === 'req') return '需求广场';
-    return isTeacher.value ? '需求广场' : '老师广场';
-  });
+  const pageTitle = computed(() => (isTeacher.value ? '需求广场' : '老师广场'));
 
   const distanceText = computed(() =>
     activeDistance.value === 999 ? '距离' : `${activeDistance.value}km内`,
@@ -239,10 +229,6 @@
     );
   });
 
-  const limitedItems = computed(() =>
-    isLogin.value ? displayItems.value : displayItems.value.slice(0, 5),
-  );
-
   function openPicker(type) {
     if (type === 'subject') {
       uni.showActionSheet({
@@ -281,17 +267,16 @@
     uni.navigateTo({ url: '/pages/tutor/city/index' });
   }
 
+  function goIdentity() {
+    uni.navigateTo({ url: '/pages/tutor/identity/index' });
+  }
+
   function goFilter() {
     uni.navigateTo({ url: '/pages/tutor/filter/index' });
   }
 
   function showLogin() {
     showAuthModal();
-  }
-
-  function changeType(type) {
-    activeType.value = type;
-    reload();
   }
 
   function goDetail(item) {
@@ -341,7 +326,7 @@
       longitude: location.longitude,
       latitude: location.latitude,
       filters: filters.value,
-      type: activeType.value,
+      type: targetType.value,
       subject: activeSubject.value,
       distance: activeDistance.value,
       sort: activeSort.value,
@@ -359,27 +344,12 @@
   }
 
   async function fetchRemoteList() {
-    if (activeType.value === 'req') {
+    if (targetType.value === 'req') {
       const result = await TutorMarketApi.getDemandPage(buildParams('req'));
       return result?.code === 0 ? normalizePageResult(result, 'req') : null;
     }
-    if (activeType.value === 'tutor') {
-      const result = await TutorMarketApi.getResumePage(buildParams('tutor'));
-      return result?.code === 0 ? normalizePageResult(result, 'tutor') : null;
-    }
-    const [demands, resumes] = await Promise.all([
-      TutorMarketApi.getDemandPage(buildParams('req')),
-      TutorMarketApi.getResumePage(buildParams('tutor')),
-    ]);
-    if (demands?.code !== 0 && resumes?.code !== 0) return null;
-    const demandPage =
-      demands?.code === 0 ? normalizePageResult(demands, 'req') : { list: [], total: 0 };
-    const resumePage =
-      resumes?.code === 0 ? normalizePageResult(resumes, 'tutor') : { list: [], total: 0 };
-    return {
-      list: [...resumePage.list, ...demandPage.list],
-      total: resumePage.total + demandPage.total,
-    };
+    const result = await TutorMarketApi.getResumePage(buildParams('tutor'));
+    return result?.code === 0 ? normalizePageResult(result, 'tutor') : null;
   }
 
   function fetchLocalList() {
@@ -387,8 +357,7 @@
       item.type === 'tutor' ? normalizeResume(item, index) : normalizeDemand(item, index),
     );
     const advanced = filters.value || {};
-    const type = activeType.value === 'all' ? advanced.targetType || 'all' : activeType.value;
-    if (type !== 'all') list = list.filter((item) => item.type === type);
+    list = list.filter((item) => item.type === targetType.value);
     if (activeSubject.value)
       list = list.filter((item) => item.subjects.includes(activeSubject.value));
     if (advanced.subjects?.length) {
@@ -475,13 +444,13 @@
   function loadContext() {
     city.value = uni.getStorageSync('tutor_city') || {};
     filters.value = uni.getStorageSync('tutor_filter') || {};
-    if (filters.value.targetType && filters.value.targetType !== activeType.value) {
-      activeType.value = filters.value.targetType;
-    }
   }
 
   function reload() {
     state.list = [];
+    if (!isLogin.value || !profile.value?.role) {
+      return;
+    }
     loadList(true);
   }
 
@@ -630,29 +599,6 @@
     color: #2563eb;
     background: #ffffff;
     font-size: 20rpx;
-  }
-
-  .type-tabs {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14rpx;
-    margin: 22rpx 0;
-  }
-
-  .type-tab {
-    height: 64rpx;
-    border-radius: 999rpx;
-    color: #475569;
-    background: #ffffff;
-    font-size: 25rpx;
-    font-weight: 700;
-    border: 1px solid #e2e8f0;
-  }
-
-  .type-tab.active {
-    color: #ffffff;
-    background: #2563eb;
-    border-color: #2563eb;
   }
 
   .list,
