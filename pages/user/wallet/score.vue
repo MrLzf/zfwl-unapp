@@ -24,6 +24,25 @@
       </view>
       <button class="guide-btn ss-reset-button" @tap="goService">充值/客服</button>
     </view>
+    <view class="task-card">
+      <view class="guide-title">做任务赚积分</view>
+      <view v-for="task in state.tasks" :key="task.type" class="task-item">
+        <view
+          ><view class="name">{{ task.title }}</view
+          ><view class="guide-desc">{{ task.description }}</view
+          ><view class="guide-desc">{{
+            task.point == null ? '按签到规则奖励' : `完成奖励 +${task.point} 积分`
+          }}</view></view
+        >
+        <button
+          v-if="!task.completed || task.type === 'five_star_review'"
+          class="guide-btn ss-reset-button"
+          @tap="handleTask(task)"
+          >{{ task.action === 'sign_in' ? '签到' : '去完成' }}</button
+        >
+        <text v-else class="done">已完成</text>
+      </view>
+    </view>
 
     <view class="tabs">
       <button
@@ -69,10 +88,12 @@
 
 <script setup>
   import { computed, reactive, ref } from 'vue';
-  import { onLoad, onReachBottom } from '@dcloudio/uni-app';
+  import { onLoad, onReachBottom, onShow } from '@dcloudio/uni-app';
   import dayjs from 'dayjs';
   import sheep from '@/sheep';
   import PointApi from '@/sheep/api/member/point';
+  import SignInApi from '@/sheep/api/member/signin';
+  import TutorPointApi from '@/sheep/api/tutor/point';
   import { getLocalPoints } from '@/sheep/api/tutor/local-state';
 
   const userInfo = computed(() => sheep.$store('user').userInfo || {});
@@ -93,7 +114,27 @@
       pageNo: 1,
     },
     loadStatus: 'more',
+    tasks: [],
   });
+
+  async function getTaskList() {
+    const result = await TutorPointApi.getTaskList();
+    if (result?.code === 0) state.tasks = result.data || [];
+  }
+
+  async function handleTask(task) {
+    if (task.action === 'sign_in') {
+      const result = await SignInApi.createSignInRecord();
+      if (result?.code === 0) {
+        const userStore = sheep.$store('user');
+        await userStore.getInfo();
+        await getTaskList();
+        await getLogList(true);
+      }
+      return;
+    }
+    if (task.path) uni.navigateTo({ url: task.path });
+  }
 
   const tabMaps = [
     { name: '全部', value: 'all' },
@@ -177,10 +218,20 @@
     uni.switchTab({ url: '/pages/index/message' });
   }
 
+  async function refreshScorePage() {
+    const userStore = sheep.$store('user');
+    localPoints.value = getLocalPoints();
+    await userStore.getInfo();
+    await getTaskList();
+    await getLogList(true);
+  }
+
   onLoad((options = {}) => {
     state.insufficient = options.scene === 'insufficient';
-    localPoints.value = getLocalPoints();
-    getLogList(true);
+  });
+
+  onShow(() => {
+    refreshScorePage();
   });
 
   onReachBottom(onLoadMore);
@@ -284,6 +335,29 @@
     padding: 8rpx;
     border-radius: 16rpx;
     background: #e2e8f0;
+  }
+  .task-card {
+    margin: 0 24rpx 24rpx;
+    padding: 26rpx;
+    border-radius: 18rpx;
+    background: #fff;
+    border: 1px solid #e8eef0;
+  }
+  .task-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16rpx;
+    padding: 22rpx 0;
+    border-bottom: 1px solid #eef2f7;
+  }
+  .task-item:last-child {
+    border-bottom: 0;
+  }
+  .done {
+    color: #16a34a;
+    font-size: 24rpx;
+    font-weight: 800;
   }
 
   .tab {

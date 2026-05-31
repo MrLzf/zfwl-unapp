@@ -112,6 +112,17 @@
           }
         },
         {
+          "path": "teacher-profile/index",
+          "style": {
+            "navigationBarTitleText": "教师资料"
+          },
+          "meta": {
+            "auth": true,
+            "title": "教师资料",
+            "group": "家教"
+          }
+        },
+        {
           "path": "detail/index",
           "style": {
             "navigationBarTitleText": "需求详情"
