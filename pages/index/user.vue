@@ -184,37 +184,42 @@
     },
   ]);
 
-  const listMenus = computed(() => [
-    {
-      label: '家教档案',
-      icon: 'cicon-my',
-      path: '/pages/tutor/identity/index',
-      badge: profile.value?.roleName || '去选择',
-    },
-    {
-      label: '教师认证',
-      icon: 'cicon-check-round',
-      path: '/pages/tutor/certification/index',
-      badge: isTeacher.value ? state.certification?.statusName || '未提交' : '',
-    },
-    {
-      label: '选择城市',
-      icon: 'cicon-location-on',
-      path: '/pages/tutor/city/index',
-      badge: profile.value?.cityName || uni.getStorageSync('tutor_city')?.name || '',
-    },
-    {
-      label: '积分明细',
-      icon: 'cicon-coin',
-      path: '/pages/user/wallet/score',
-      badge: '+50积分',
-    },
-    {
-      label: '账号资料',
-      icon: 'cicon-my-o',
-      path: '/pages/user/info',
-    },
-  ]);
+  const listMenus = computed(() => {
+    const menus = [
+      {
+        label: '家教档案',
+        icon: 'cicon-my',
+        path: '/pages/tutor/identity/index',
+        badge: profile.value?.roleName || '去选择',
+      },
+      {
+        label: '选择城市',
+        icon: 'cicon-location-on',
+        path: '/pages/tutor/city/index',
+        badge: profile.value?.cityName || uni.getStorageSync('tutor_city')?.name || '',
+      },
+      {
+        label: '积分明细',
+        icon: 'cicon-coin',
+        path: '/pages/user/wallet/score',
+        badge: `${userInfo.value.point || 0}积分`,
+      },
+      {
+        label: '账号资料',
+        icon: 'cicon-my-o',
+        path: '/pages/user/info',
+      },
+    ];
+    if (isTeacher.value) {
+      menus.splice(1, 0, {
+        label: '教师认证',
+        icon: 'cicon-check-round',
+        path: '/pages/tutor/certification/index',
+        badge: state.certification?.statusName || '未提交',
+      });
+    }
+    return menus;
+  });
 
   function showAuth() {
     showAuthModal();
