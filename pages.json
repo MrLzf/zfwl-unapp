@@ -167,6 +167,17 @@
           }
         },
         {
+          "path": "messages/index",
+          "style": {
+            "navigationBarTitleText": "消息列表"
+          },
+          "meta": {
+            "auth": true,
+            "title": "消息列表",
+            "group": "家教"
+          }
+        },
+        {
           "path": "favorites/index",
           "style": {
             "navigationBarTitleText": "我的收藏"
