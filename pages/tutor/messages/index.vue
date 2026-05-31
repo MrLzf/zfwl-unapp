@@ -12,7 +12,7 @@
       <view
         v-for="item in messages"
         :key="item.id"
-        :class="['message-card', item.read ? '' : 'unread']"
+        :class="['message-card', item.readStatus ? '' : 'unread']"
         @tap="openMessage(item)"
       >
         <view class="message-head"
@@ -47,8 +47,6 @@
   const loading = ref(false);
   const finished = ref(false);
   const error = ref(false);
-  const unwrap = (result) => result?.data ?? result ?? {};
-
   async function load(reset = false) {
     if (loading.value || (!reset && finished.value)) return;
     if (reset) {
@@ -59,10 +57,17 @@
     loading.value = true;
     error.value = false;
     try {
-      const payload = unwrap(
-        await TutorMessageApi.getPage({ category: category.value, pageNo: pageNo.value, pageSize }),
-      );
-      const rows = payload.list || payload.records || [];
+      const result = await TutorMessageApi.getPage({
+        category: category.value,
+        pageNo: pageNo.value,
+        pageSize,
+      });
+      if (result?.code !== 0) {
+        error.value = true;
+        return;
+      }
+      const payload = result.data || {};
+      const rows = payload.list || [];
       messages.value.push(...rows);
       finished.value =
         rows.length < pageSize || messages.value.length >= (payload.total || Infinity);
@@ -77,15 +82,20 @@
     load();
   }
   async function markCategoryRead() {
-    await TutorMessageApi.markAllRead(category.value);
-    messages.value = messages.value.map((item) => ({ ...item, read: true }));
+    const result = await TutorMessageApi.markAllRead(category.value);
+    if (result?.code !== 0) {
+      uni.showToast({ title: '操作失败，请重试', icon: 'none' });
+      return;
+    }
+    messages.value = messages.value.map((item) => ({ ...item, readStatus: true }));
   }
   function openMessage(item) {
-    if (!item.read) {
-      TutorMessageApi.markRead(item.id).catch(() => {});
-      item.read = true;
+    if (!item.readStatus) {
+      TutorMessageApi.markRead(item.id).then((result) => {
+        if (result?.code === 0) item.readStatus = true;
+      });
     }
-    const path = actionRoutes[item.actionType];
+    const path = actionRoutes[item.action];
     if (path) uni.navigateTo({ url: path });
   }
   onLoad((options) => {

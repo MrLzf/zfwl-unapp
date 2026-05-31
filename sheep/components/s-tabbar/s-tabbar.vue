@@ -17,6 +17,9 @@
             :class="isActive(item) ? item.activeIcon || item.icon : item.icon"
           ></text>
         </template>
+        <text v-if="item.url === '/pages/index/message' && unreadCount" class="tabbar-badge">{{
+          unreadCount > 99 ? '99+' : unreadCount
+        }}</text>
         <text class="tabbar-text">{{ item.text }}</text>
       </button>
     </view>
@@ -25,8 +28,10 @@
 </template>
 
 <script setup>
-  import { computed } from 'vue';
+  import { computed, ref } from 'vue';
+  import { onShow } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
+  import TutorMessageApi from '@/sheep/api/tutor/message';
 
   const props = defineProps({
     path: {
@@ -82,6 +87,7 @@
 
   const activeColor = computed(() => tabbar.value.style?.activeColor || '#2563eb');
   const inactiveColor = computed(() => tabbar.value.style?.color || '#94a3b8');
+  const unreadCount = ref(0);
 
   const tabbarStyle = computed(() => ({
     '--tabbar-active-color': activeColor.value,
@@ -103,6 +109,21 @@
     }
     sheep.$router.go(item.url);
   }
+
+  async function refreshUnreadCount() {
+    if (!sheep.$store('user').isLogin) {
+      unreadCount.value = 0;
+      return;
+    }
+    try {
+      const result = await TutorMessageApi.getSummary();
+      unreadCount.value = result?.code === 0 ? result.data?.totalUnread || 0 : 0;
+    } catch {
+      unreadCount.value = 0;
+    }
+  }
+
+  onShow(refreshUnreadCount);
 </script>
 
 <style lang="scss" scoped>
@@ -128,6 +149,7 @@
   }
 
   .tabbar-item {
+    position: relative;
     min-width: 0;
     width: 100%;
     height: 112rpx;
@@ -155,6 +177,22 @@
     color: currentColor;
     font-size: 22rpx;
     line-height: 28rpx;
+  }
+
+  .tabbar-badge {
+    position: absolute;
+    top: 0;
+    left: calc(50% + 12rpx);
+    min-width: 30rpx;
+    height: 30rpx;
+    padding: 0 8rpx;
+    border-radius: 15rpx;
+    box-sizing: border-box;
+    color: #fff;
+    background: #ef4444;
+    font-size: 18rpx;
+    line-height: 30rpx;
+    text-align: center;
   }
 
   .tabbar-item.center {

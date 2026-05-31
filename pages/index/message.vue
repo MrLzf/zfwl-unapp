@@ -68,12 +68,15 @@
   const categories = ref(baseCategories.map((item) => ({ ...item, unreadCount: 0 })));
   const error = ref(false);
 
-  const unwrap = (result) => result?.data ?? result ?? [];
   async function loadSummary() {
     error.value = false;
     try {
-      const payload = unwrap(await TutorMessageApi.getSummary());
-      const rows = Array.isArray(payload) ? payload : payload.list || [];
+      const result = await TutorMessageApi.getSummary();
+      if (result?.code !== 0) {
+        error.value = true;
+        return;
+      }
+      const rows = result.data?.categories || [];
       categories.value = baseCategories.map((item) => ({
         ...item,
         ...(rows.find((row) => row.category === item.category) || {}),
@@ -86,7 +89,11 @@
     loadSummary();
   }
   async function markAllRead() {
-    await TutorMessageApi.markAllRead();
+    const result = await TutorMessageApi.markAllRead();
+    if (result?.code !== 0) {
+      uni.showToast({ title: '操作失败，请重试', icon: 'none' });
+      return;
+    }
     categories.value = categories.value.map((item) => ({ ...item, unreadCount: 0 }));
   }
   function openCategory(item) {
