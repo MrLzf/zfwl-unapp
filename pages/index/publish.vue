@@ -29,17 +29,17 @@
 
         <view class="type-switch">
           <button
+            v-if="!isTeacher"
             class="type-btn ss-reset-button"
-            :class="{ active: postType === 'parent', disabled: isTeacher }"
-            :disabled="isTeacher"
+            :class="{ active: postType === 'parent' }"
             @tap="setPostType('parent')"
           >
             家长需求
           </button>
           <button
+            v-if="isTeacher"
             class="type-btn ss-reset-button"
-            :class="{ active: postType === 'teacher', disabled: !isTeacher }"
-            :disabled="!isTeacher"
+            :class="{ active: postType === 'teacher' }"
             @tap="setPostType('teacher')"
           >
             教师简历
