@@ -1,10 +1,14 @@
 <template>
   <s-layout class="identity-page" title="家教身份" navbar="inner">
     <view class="hero">
-      <view class="hero-title">选择你的家教身份</view>
-      <view class="hero-subtitle"
-        >身份决定首页推荐和发布表单，首次选择后由平台保护，不会被误改。</view
-      >
+      <view class="hero-title">{{ state.profile ? '家教档案' : '选择你的家教身份' }}</view>
+      <view class="hero-subtitle">
+        {{
+          state.profile
+            ? '身份类型首次选择后由平台保护，如需调整请联系平台处理。'
+            : '身份决定首页推荐和发布表单，首次选择后由平台保护，不会被误改。'
+        }}
+      </view>
     </view>
 
     <view class="section">
@@ -24,7 +28,7 @@
       </view>
     </view>
 
-    <view class="section">
+    <view v-if="!state.profile" class="section">
       <view class="section-title">身份类型</view>
       <view class="role-list">
         <button

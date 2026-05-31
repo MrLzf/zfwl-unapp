@@ -133,6 +133,7 @@
     certification: null,
     postCount: 0,
     contactCount: 0,
+    city: {},
   });
 
   const isLogin = computed(() => userStore.isLogin);
@@ -140,6 +141,7 @@
   const profile = computed(() => userStore.tutorProfile);
   const isTeacher = computed(() => profile.value?.role === TUTOR_ROLE.TEACHER);
   const roleText = computed(() => profile.value?.roleName || '未选择身份');
+  const cityName = computed(() => state.city?.name || profile.value?.cityName || '');
   const isCertificationApproved = computed(
     () => state.certification?.status === TUTOR_AUDIT_STATUS.APPROVED,
   );
@@ -152,7 +154,7 @@
       return '未选择家教身份';
     }
     if (!isTeacher.value) {
-      return `当前城市：${profile.value.cityName || '-'}`;
+      return `当前城市：${cityName.value || '-'}`;
     }
     return `教师认证：${state.certification?.statusName || '未提交'}`;
   });
@@ -196,7 +198,7 @@
         label: '选择城市',
         icon: 'cicon-location-on',
         path: '/pages/tutor/city/index',
-        badge: profile.value?.cityName || uni.getStorageSync('tutor_city')?.name || '',
+        badge: cityName.value,
       },
       {
         label: '积分明细',
@@ -289,9 +291,15 @@
     await userStore.getTutorProfile({ silent: false });
   }
 
+  function loadCity() {
+    state.city = uni.getStorageSync('tutor_city') || uni.getStorageSync('tutor_located_city') || {};
+  }
+
   async function refresh() {
+    loadCity();
     await userStore.updateUserData();
     await loadProfile();
+    loadCity();
     await Promise.all([loadCertification(), loadPostCount(), loadContactCount()]);
   }
 

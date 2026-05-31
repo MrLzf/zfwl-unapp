@@ -81,8 +81,12 @@
 <script setup>
   import { computed, reactive } from 'vue';
   import { onLoad } from '@dcloudio/uni-app';
+  import sheep from '@/sheep';
   import TutorCityApi from '@/sheep/api/tutor/city';
+  import TutorProfileApi from '@/sheep/api/tutor/profile';
   import { fallbackTutorCities, nearestCityByLocation } from '@/sheep/api/tutor/utils';
+
+  const userStore = sheep.$store('user');
 
   const state = reactive({
     keyword: '',
@@ -158,7 +162,39 @@
     state.locatedCity = uni.getStorageSync('tutor_located_city') || null;
   }
 
-  function selectCity(city) {
+  function syncLocalProfileCity(selected) {
+    const profile = userStore.tutorProfile || uni.getStorageSync('tutor_profile');
+    if (!profile) {
+      return;
+    }
+    userStore.setTutorProfile({
+      ...profile,
+      cityId: selected.id,
+      cityCode: selected.code,
+      cityName: selected.name,
+    });
+  }
+
+  async function syncRemoteProfileCity(selected) {
+    if (!userStore.isLogin || !userStore.tutorProfile?.role) {
+      return;
+    }
+    const location = uni.getStorageSync('tutor_location') || {};
+    const profile = userStore.tutorProfile || {};
+    const result = await TutorProfileApi.updateLocation({
+      cityCode: selected.code,
+      longitude: location.longitude || profile.longitude,
+      latitude: location.latitude || profile.latitude,
+      locationAddress: selected.name,
+    });
+    if (result?.code === 0) {
+      userStore.setTutorProfile(result.data);
+      return true;
+    }
+    return false;
+  }
+
+  async function selectCity(city) {
     if (!city.opened) {
       uni.showToast({
         title: '该城市即将开放',
@@ -177,10 +213,19 @@
     };
     state.currentCity = selected;
     uni.setStorageSync('tutor_city', selected);
-    uni.showToast({
-      title: `已选择${city.name}`,
-      icon: 'none',
-    });
+    syncLocalProfileCity(selected);
+    try {
+      const synced = await syncRemoteProfileCity(selected);
+      uni.showToast({
+        title: synced === false ? '城市已本地切换，档案同步失败' : `已选择${city.name}`,
+        icon: 'none',
+      });
+    } catch (error) {
+      uni.showToast({
+        title: '城市已本地切换，档案同步失败',
+        icon: 'none',
+      });
+    }
     setTimeout(() => {
       uni.navigateBack();
     }, 300);
