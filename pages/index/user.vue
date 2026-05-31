@@ -2,15 +2,6 @@
   <s-layout title="" navbar="" tabbar="/pages/index/user" class="user-page">
     <view class="user-shell">
       <view class="user-hero" :class="{ teacher: isTeacher }">
-        <view class="hero-actions">
-          <button class="hero-icon ss-reset-button" @tap="go('/pages/tutor/identity/index')">
-            <text class="cicon-refresh"></text>
-          </button>
-          <button class="hero-icon ss-reset-button" @tap="go('/pages/public/setting')">
-            <text class="cicon-settings"></text>
-          </button>
-        </view>
-
         <view class="profile-main">
           <image
             class="avatar"
@@ -337,27 +328,6 @@
 
   .user-hero.teacher {
     background: linear-gradient(135deg, #16a34a 0%, #059669 100%);
-  }
-
-  .hero-actions {
-    position: absolute;
-    top: calc(var(--status-bar-height) + 24rpx);
-    right: 30rpx;
-    display: flex;
-    gap: 24rpx;
-  }
-
-  .hero-icon {
-    width: 52rpx;
-    height: 52rpx;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255, 255, 255, 0.86);
-  }
-
-  .hero-icon text {
-    font-size: 34rpx;
   }
 
   .profile-main {
