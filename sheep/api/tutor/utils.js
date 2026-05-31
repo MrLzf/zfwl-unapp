@@ -24,7 +24,14 @@ export const tutorModeOptions = [
   { label: '均可', value: 3, key: 'both' },
 ];
 
-export const tutorGradeOptions = ['小学', '初中', '高中', '成人'];
+export const tutorGradeOptions = ['小学', '初中', '高中', '其他'];
+
+export const tutorSubjectOptionsByGrade = {
+  小学: ['语文', '数学', '英语', '编程', '钢琴', '美术', '其他'],
+  初中: ['语文', '数学', '英语', '物理', '化学', '生物', '编程', '其他'],
+  高中: ['语文', '数学', '英语', '物理', '化学', '生物', '编程', '其他'],
+  其他: ['其他'],
+};
 
 export const tutorSubjectOptions = [
   '语文',

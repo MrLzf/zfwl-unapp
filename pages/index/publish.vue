@@ -77,7 +77,11 @@
             </label>
             <label class="field">
               <text>科目</text>
-              <input v-model="form.subjects" placeholder="如：数学,物理" maxlength="80" />
+              <picker :range="subjectOptions" @change="onSubjectChange">
+                <view class="picker-value">
+                  {{ form.subjects || (form.grade ? '请选择科目' : '请先选择年级') }}
+                </view>
+              </picker>
             </label>
           </view>
 
@@ -189,6 +193,7 @@
     TUTOR_ROLE,
     tutorGradeOptions,
     tutorModeOptions,
+    tutorSubjectOptionsByGrade,
   } from '@/sheep/api/tutor/utils';
 
   const userStore = sheep.$store('user');
@@ -250,6 +255,7 @@
   const certificationStatusText = computed(
     () => state.certification?.statusName || (state.certification ? '未通过' : '未提交'),
   );
+  const subjectOptions = computed(() => tutorSubjectOptionsByGrade[form.grade] || []);
 
   function resetFormForRole() {
     form.title = '';
@@ -296,6 +302,13 @@
 
   function onGradeChange(event) {
     form.grade = gradeOptions[event.detail.value];
+    if (!subjectOptions.value.includes(form.subjects)) {
+      form.subjects = '';
+    }
+  }
+
+  function onSubjectChange(event) {
+    form.subjects = subjectOptions.value[event.detail.value];
   }
 
   function onTrialChange(event) {
