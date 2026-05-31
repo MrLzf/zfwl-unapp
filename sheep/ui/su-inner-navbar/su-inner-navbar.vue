@@ -18,11 +18,13 @@
     <view class="ui-navbar-box">
       <view
         class="ui-bar"
-        :class="[{
-           'text-white': state.isDark,
-           'text-black': !state.isDark,
-           'ss-p-x-20': sheep.$platform.provider !== 'alipay'
-        }]"
+        :class="[
+          {
+            'text-white': props.dark,
+            'text-black': !props.dark,
+            'ss-p-x-20': sheep.$platform.provider !== 'alipay',
+          },
+        ]"
         :style="[{ height: sys_navBar - sys_statusBar + 'px' }]"
       >
         <view class="icon-box ss-flex">
@@ -66,17 +68,15 @@
    *
    */
 
-  import { computed, reactive, onBeforeMount, ref } from 'vue';
+  import { reactive, onBeforeMount } from 'vue';
   import sheep from '@/sheep';
-  import { onPageScroll } from '@dcloudio/uni-app';
-  import { showMenuTools, closeMenuTools } from '@/sheep/hooks/useModal';
+  import { showMenuTools } from '@/sheep/hooks/useModal';
 
   // 本地数据
   const state = reactive({
     statusCur: '',
     capsuleStyle: {},
     capsuleBack: {},
-    isDark: true,
   });
 
   const sys_statusBar = sheep.$platform.device.statusBarHeight;
@@ -92,6 +92,10 @@
       //返回文本
       type: String,
       default: '',
+    },
+    dark: {
+      type: Boolean,
+      default: false,
     },
     bg: {
       type: String,
@@ -142,11 +146,6 @@
     init();
   });
 
-  onPageScroll((e) => {
-    let top = e.scrollTop;
-    state.isDark = top < sheep.$platform.navbar;
-  });
-
   function onClickLeft() {
     if (hasHistory) {
       sheep.$router.back();
@@ -180,7 +179,8 @@
     width: 134rpx;
     height: 56rpx;
     margin-left: 8rpx;
-    border: 1px solid rgba(#fff, 0.4);
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(148, 163, 184, 0.28);
     .line {
       width: 2rpx;
       height: 24rpx;
