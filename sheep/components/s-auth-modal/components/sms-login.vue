@@ -18,7 +18,7 @@
         :key="role.value"
         class="role-card ss-reset-button"
         :class="{ active: state.model.role === role.value }"
-        @tap="state.model.role = role.value"
+        @tap="selectRole(role.value)"
       >
         <text :class="role.icon"></text>
         <text class="role-name">{{ role.label }}</text>
@@ -86,7 +86,7 @@
   import TutorProfileApi from '@/sheep/api/tutor/profile';
   import TutorCityApi from '@/sheep/api/tutor/city';
 
-  const emits = defineEmits(['onConfirm']);
+  const emits = defineEmits(['onConfirm', 'roleChange']);
 
   const props = defineProps({
     agreeStatus: {
@@ -117,6 +117,11 @@
       code: '',
     },
   });
+
+  function selectRole(role) {
+    state.model.role = role;
+    emits('roleChange', role === 'parent' ? 1 : 2);
+  }
 
   function checkAgreement() {
     if (props.agreeStatus === true) {

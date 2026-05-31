@@ -34,7 +34,7 @@ const login = async () => {
 };
 
 // 微信小程序手机号授权登陆
-const mobileLogin = async (e) => {
+const mobileLogin = async (e, extra = {}) => {
   return new Promise(async (resolve, reject) => {
     if (e.errMsg !== 'getPhoneNumber:ok') {
       return resolve(false);
@@ -47,7 +47,12 @@ const mobileLogin = async (e) => {
     }
 
     // 2. 一键登录
-    const loginResult = await AuthUtil.weixinMiniAppLogin(e.code, codeResult.code, 'default');
+    const loginResult = await AuthUtil.weixinMiniAppLogin(
+      e.code,
+      codeResult.code,
+      'default',
+      extra,
+    );
     if (loginResult.code === 0) {
       setOpenid(loginResult.data.openid);
       return resolve(true);

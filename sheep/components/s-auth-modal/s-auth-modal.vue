@@ -20,6 +20,7 @@
         v-if="authType === 'smsLogin'"
         :agreeStatus="state.protocol"
         @onConfirm="onConfirm"
+        @roleChange="state.tutorRole = $event"
       />
 
       <!-- 3. 忘记密码 resetPassword-->
@@ -45,6 +46,7 @@
           <button
             class="ss-reset-button login-btn"
             open-type="getPhoneNumber"
+            :disabled="state.protocol !== true"
             @getphonenumber="getPhoneNumber"
           >
             快捷登录
@@ -147,6 +149,8 @@
   import changePassword from './components/change-password.vue';
   import mpAuthorization from './components/mp-authorization.vue';
   import { closeAuthModal, showAuthModal } from '@/sheep/hooks/useModal';
+  import TutorProfileApi from '@/sheep/api/tutor/profile';
+  import TutorCityApi from '@/sheep/api/tutor/city';
 
   const modalStore = sheep.$store('modal');
   // 授权弹窗类型
@@ -154,9 +158,11 @@
 
   const state = reactive({
     protocol: null, // null表示未选择，true表示同意，false表示拒绝
+    tutorRole: 1,
   });
 
   const currentProtocol = ref(false);
+  const tutorRole = computed(() => state.tutorRole);
 
   // 同意协议
   function onAgree() {
@@ -184,35 +190,84 @@
     }, 1000);
   }
 
-  // 第三方授权登陆（微信小程序、Apple）
-  const thirdLogin = async (provider) => {
-    if (state.protocol !== true) {
-      currentProtocol.value = true;
-      setTimeout(() => {
-        currentProtocol.value = false;
-      }, 1000);
+  function checkAgreement() {
+    if (state.protocol === true) {
+      return true;
+    }
+    onConfirm(true);
+    sheep.$helper.toast(
+      state.protocol === false ? '您已拒绝协议，无法继续登录' : '请选择是否同意协议',
+    );
+    return false;
+  }
 
-      if (state.protocol === false) {
-        sheep.$helper.toast('您已拒绝协议，无法继续登录');
-      } else {
-        sheep.$helper.toast('请选择是否同意协议');
-      }
+  async function resolveCity() {
+    const cachedCity = uni.getStorageSync('tutor_city');
+    if (cachedCity?.code) {
+      return cachedCity;
+    }
+    const { code, data } = await TutorCityApi.getCityList();
+    if (code !== 0) {
+      return null;
+    }
+    const cities = data || [];
+    const city =
+      cities.find((item) => item.opened && item.name === '北京市') ||
+      cities.find((item) => item.opened && item.hot) ||
+      cities.find((item) => item.opened);
+    if (city) {
+      uni.setStorageSync('tutor_city', city);
+    }
+    return city || null;
+  }
+
+  async function ensureTutorProfile(city) {
+    const userStore = sheep.$store('user');
+    const profile = await userStore.getTutorProfile();
+    if (profile?.role) {
+      return true;
+    }
+    const initRes = await TutorProfileApi.initProfile({
+      role: tutorRole.value,
+      cityCode: city.code,
+    });
+    if (initRes.code !== 0) {
+      return false;
+    }
+    userStore.setTutorProfile(initRes.data);
+    return true;
+  }
+
+  async function completeWechatLogin(city) {
+    const userStore = sheep.$store('user');
+    const userInfo = await userStore.getInfo();
+    if (!(await ensureTutorProfile(city))) {
       return;
     }
-    const loginRes = await sheep.$platform.useProvider(provider).login();
-    if (loginRes) {
-      const userInfo = await sheep.$store('user').getInfo();
-      closeAuthModal();
-      // 如果用户已经有头像和昵称，不需要再次授权
-      if (userInfo.avatar && userInfo.nickname) {
-        return;
-      }
-
-      // 触发小程序授权信息弹框
+    closeAuthModal();
+    if (!userInfo?.avatar || !userInfo?.nickname) {
       // #ifdef MP-WEIXIN
       showAuthModal('mpAuthorization');
       // #endif
     }
+  }
+
+  // 第三方授权登陆（微信小程序、Apple）
+  const thirdLogin = async (provider) => {
+    if (!checkAgreement()) {
+      return;
+    }
+    const city = await resolveCity();
+    if (!city?.code) {
+      sheep.$helper.toast('请先选择服务城市');
+      return;
+    }
+    const loginRes = await sheep.$platform.useProvider(provider).login();
+    if (loginRes) {
+      await completeWechatLogin(city);
+      return;
+    }
+    sheep.$helper.toast('微信登录失败，请稍后重试');
   };
 
   // 微信小程序的“手机号快速验证”：https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/getPhoneNumber.html
@@ -221,10 +276,23 @@
       sheep.$helper.toast('快捷登录失败');
       return;
     }
-    let result = await sheep.$platform.useProvider().mobileLogin(e.detail);
-    if (result) {
-      closeAuthModal();
+    if (!checkAgreement()) {
+      return;
     }
+    const city = await resolveCity();
+    if (!city?.code) {
+      sheep.$helper.toast('请先选择服务城市');
+      return;
+    }
+    const result = await sheep.$platform.useProvider().mobileLogin(e.detail, {
+      tutorRole: tutorRole.value,
+      tutorCityCode: city.code,
+    });
+    if (result) {
+      await completeWechatLogin(city);
+      return;
+    }
+    sheep.$helper.toast('快捷登录失败');
   };
 </script>
 
