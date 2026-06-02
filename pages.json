@@ -249,6 +249,17 @@
           }
         },
         {
+          "path": "wallet/balance",
+          "style": {
+            "navigationBarTitleText": "钱包充值"
+          },
+          "meta": {
+            "auth": true,
+            "title": "钱包充值",
+            "group": "用户中心"
+          }
+        },
+        {
           "path": "wallet/score",
           "style": {
             "navigationBarTitleText": "我的积分"
