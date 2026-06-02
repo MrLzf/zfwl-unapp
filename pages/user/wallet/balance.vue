@@ -4,14 +4,14 @@
       <button class="back-btn ss-reset-button" @tap="goBack">
         <text class="cicon-back"></text>
       </button>
-      <view class="balance-label">钱包余额（元）/view>
+      <view class="balance-label">钱包余额（元）</view>
       <view class="balance">{{ fenToYuan(balance) }}</view>
-      <view class="balance-desc">余额可用于支付家教服务费用/view>
+      <view class="balance-desc">余额可用于支付家教服务费用</view>
     </view>
 
     <view class="section">
-      <view class="section-title">充值套餐/view>
-      <view class="package-list">
+      <view class="section-title">充值套餐</view>
+      <view v-if="packages.length" class="package-list">
         <view
           v-for="pkg in packages"
           :key="pkg.id"
@@ -19,25 +19,28 @@
           :class="{ active: selectedPackage === pkg.id }"
           @tap="selectPackage(pkg)"
         >
-          <view class="pkg-pay">{{ fenToYuan(pkg.payPrice) }} 元/view>
-          <view v-if="pkg.bonusPrice" class="pkg-bonus">送{{ fenToYuan(pkg.bonusPrice) }} 元/view>
-          <view class="pkg-total">到账 {{ fenToYuan(pkg.payPrice + pkg.bonusPrice) }} 元/view>
+          <view class="pkg-pay">{{ fenToYuan(pkg.payPrice) }} 元</view>
+          <view v-if="pkg.bonusPrice" class="pkg-bonus">送{{ fenToYuan(pkg.bonusPrice) }} 元</view>
+          <view class="pkg-total">到账 {{ fenToYuan(pkg.payPrice + pkg.bonusPrice) }} 元</view>
         </view>
       </view>
+      <s-empty v-else text="暂无充值套餐" icon="/static/data-empty.png" />
       <button
         class="recharge-btn ss-reset-button"
         :disabled="!selectedPackage"
+        :aria-disabled="!selectedPackage"
         @tap="handleRecharge"
       >
-        立即充值      </button>
+        立即充值
+      </button>
     </view>
 
     <view class="section">
-      <view class="section-title">充值记录/view>
+      <view class="section-title">充值记录</view>
       <view v-if="rechargeList.length" class="record-list">
         <view v-for="item in rechargeList" :key="item.id" class="record-item">
           <view>
-            <view class="record-title">充值/view>
+            <view class="record-title">充值</view>
             <view class="record-time">{{ formatTime(item.createTime) }}</view>
           </view>
           <view class="record-amount income">
@@ -45,7 +48,7 @@
           </view>
         </view>
       </view>
-      <s-empty v-else text="暂无充值记录 icon="/static/data-empty.png" />
+      <s-empty v-else text="暂无充值记录" icon="/static/data-empty.png" />
     </view>
   </s-layout>
 </template>
@@ -60,9 +63,10 @@
   const packages = ref([]);
   const selectedPackage = ref(null);
   const rechargeList = ref([]);
+  const loading = ref(false);
 
   function fenToYuan(fen) {
-    if (fen == null) return '0.00';
+    if (fen === null || fen === undefined) return '0.00';
     return (Number(fen) / 100).toFixed(2);
   }
 
@@ -75,10 +79,11 @@
     try {
       const res = await PayWalletApi.getWallet();
       if (res?.code === 0 && res.data) {
-        balance.value = res.data.balance || 0;
+        balance.value = res.data.balance != null ? res.data.balance : 0;
       }
     } catch (e) {
       console.error('loadWallet failed', e);
+      uni.showToast({ title: '加载钱包信息失败', icon: 'none' });
     }
   }
 
@@ -86,10 +91,11 @@
     try {
       const res = await PayWalletApi.getRechargePackageList();
       if (res?.code === 0 && res.data) {
-        packages.value = res.data || [];
+        packages.value = Array.isArray(res.data) ? res.data : [];
       }
     } catch (e) {
       console.error('loadPackages failed', e);
+      uni.showToast({ title: '加载充值套餐失败', icon: 'none' });
     }
   }
 
@@ -97,10 +103,11 @@
     try {
       const res = await PayWalletApi.getRechargePage({ pageNo: 1, pageSize: 20 });
       if (res?.code === 0 && res.data) {
-        rechargeList.value = res.data.list || [];
+        rechargeList.value = Array.isArray(res.data.list) ? res.data.list : [];
       }
     } catch (e) {
       console.error('loadRechargeHistory failed', e);
+      uni.showToast({ title: '加载充值记录失败', icon: 'none' });
     }
   }
 
@@ -110,23 +117,28 @@
 
   async function handleRecharge() {
     if (!selectedPackage.value) {
-      uni.showToast({ title: '请选择充值套餐, icon: 'none' });
+      uni.showToast({ title: '请选择充值套餐', icon: 'none' });
       return;
     }
+    
+    loading.value = true;
     try {
       const res = await PayWalletApi.createRecharge({ packageId: selectedPackage.value });
       if (res?.code === 0 && res.data) {
         const { payOrderId, payPrice } = res.data;
         if (payOrderId) {
-          // 调用微信支付
+          // TODO: 调起微信支付流程
           uni.showToast({ title: '充值订单已创建，请完成支付', icon: 'none' });
-          await loadWallet();
-          await loadRechargeHistory();
+          await Promise.all([loadWallet(), loadRechargeHistory()]);
         }
+      } else {
+        uni.showToast({ title: res?.msg || '充值失败', icon: 'none' });
       }
     } catch (e) {
       console.error('handleRecharge failed', e);
-      uni.showToast({ title: '充值失败，请重试, icon: 'none' });
+      uni.showToast({ title: '充值失败，请重试', icon: 'none' });
+    } finally {
+      loading.value = false;
     }
   }
 
@@ -140,9 +152,14 @@
   }
 
   onShow(() => {
-    loadWallet();
-    loadPackages();
-    loadRechargeHistory();
+    // 并行加载所有数据，提升加载速度
+    Promise.all([
+      loadWallet(),
+      loadPackages(),
+      loadRechargeHistory()
+    ]).catch(err => {
+      console.error('页面数据加载失败', err);
+    });
   });
 </script>
 
