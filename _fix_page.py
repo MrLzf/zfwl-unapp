@@ -3,7 +3,7 @@ marker = b'\"path\": \"wallet/score\"'
 new_page = b'        {
           \"path\": \"wallet/balance\",
           \"style\": {
-            \"navigationBarTitleText\": "\xe9\x92\xb1\xe5\x8c\x85\xe5\x85\x85\xe5%80\xbc"
+            \"navigationBarTitleText\": "\xe9\x92\xb1\xe5\x8c\x85\xe5\x85\x85\xe5\x80\xbc"
           },
           \"meta\": {
             \"auth\": true,

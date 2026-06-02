@@ -4,13 +4,13 @@
       <button class="back-btn ss-reset-button" @tap="goBack">
         <text class="cicon-back"></text>
       </button>
-      <view class="balance-label">钱包余额（元�?/view>
+      <view class="balance-label">钱包余额（元）/view>
       <view class="balance">{{ fenToYuan(balance) }}</view>
-      <view class="balance-desc">余额可用于支付家教服务费�?/view>
+      <view class="balance-desc">余额可用于支付家教服务费用/view>
     </view>
 
     <view class="section">
-      <view class="section-title">充值套�?/view>
+      <view class="section-title">充值套餐/view>
       <view class="package-list">
         <view
           v-for="pkg in packages"
@@ -19,9 +19,9 @@
           :class="{ active: selectedPackage === pkg.id }"
           @tap="selectPackage(pkg)"
         >
-          <view class="pkg-pay">{{ fenToYuan(pkg.payPrice) }} �?/view>
-          <view v-if="pkg.bonusPrice" class="pkg-bonus">�?{{ fenToYuan(pkg.bonusPrice) }} �?/view>
-          <view class="pkg-total">到账 {{ fenToYuan(pkg.payPrice + pkg.bonusPrice) }} �?/view>
+          <view class="pkg-pay">{{ fenToYuan(pkg.payPrice) }} 元/view>
+          <view v-if="pkg.bonusPrice" class="pkg-bonus">送{{ fenToYuan(pkg.bonusPrice) }} 元/view>
+          <view class="pkg-total">到账 {{ fenToYuan(pkg.payPrice + pkg.bonusPrice) }} 元/view>
         </view>
       </view>
       <button
@@ -29,15 +29,15 @@
         :disabled="!selectedPackage"
         @tap="handleRecharge"
       >
-        立即充�?      </button>
+        立即充值      </button>
     </view>
 
     <view class="section">
-      <view class="section-title">充值记�?/view>
+      <view class="section-title">充值记录/view>
       <view v-if="rechargeList.length" class="record-list">
         <view v-for="item in rechargeList" :key="item.id" class="record-item">
           <view>
-            <view class="record-title">充�?/view>
+            <view class="record-title">充值/view>
             <view class="record-time">{{ formatTime(item.createTime) }}</view>
           </view>
           <view class="record-amount income">
@@ -45,7 +45,7 @@
           </view>
         </view>
       </view>
-      <s-empty v-else text="暂无充值记�? icon="/static/data-empty.png" />
+      <s-empty v-else text="暂无充值记录 icon="/static/data-empty.png" />
     </view>
   </s-layout>
 </template>
@@ -110,7 +110,7 @@
 
   async function handleRecharge() {
     if (!selectedPackage.value) {
-      uni.showToast({ title: '请选择充值套�?, icon: 'none' });
+      uni.showToast({ title: '请选择充值套餐, icon: 'none' });
       return;
     }
     try {
@@ -126,7 +126,7 @@
       }
     } catch (e) {
       console.error('handleRecharge failed', e);
-      uni.showToast({ title: '充值失败，请重�?, icon: 'none' });
+      uni.showToast({ title: '充值失败，请重试, icon: 'none' });
     }
   }
 
