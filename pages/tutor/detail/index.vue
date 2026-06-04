@@ -137,6 +137,14 @@
           <text class="cicon-check-round"></text>
           <text>匹配</text>
         </button>
+        <button class="minor-btn ss-reset-button" @tap="goValueService">
+          <text class="cicon-upload"></text>
+          <text>加速</text>
+        </button>
+        <button class="minor-btn danger ss-reset-button" @tap="goComplaint">
+          <text class="cicon-warn"></text>
+          <text>举报</text>
+        </button>
         <button class="contact-btn ss-reset-button" @tap="viewContact">
           <text class="cicon-phone"></text>
           <text>{{ state.contactUnlocked ? '复看联系方式' : '查看联系方式' }}</text>
@@ -507,12 +515,28 @@
 
   function goPoints() {
     state.showConfirmModal = false;
-    uni.navigateTo({ url: '/pages/user/wallet/score?scene=insufficient' });
+    uni.navigateTo({ url: '/pages/tutor/recharge/index?scene=insufficient' });
   }
 
   function goService() {
     state.showConfirmModal = false;
-    uni.switchTab({ url: '/pages/index/message' });
+    uni.navigateTo({ url: '/pages/tutor/customer-service/index' });
+  }
+
+  function goValueService() {
+    if (!requireLogin()) return;
+    uni.navigateTo({
+      url: `/pages/tutor/value-service/index?targetType=${state.targetType}&targetId=${
+        state.id
+      }&title=${encodeURIComponent(state.detail.title || state.detail.name || '')}`,
+    });
+  }
+
+  function goComplaint() {
+    if (!requireLogin()) return;
+    uni.navigateTo({
+      url: `/pages/tutor/complaint/index?targetType=${state.targetType}&targetId=${state.id}`,
+    });
   }
 
   function copyText(text) {
@@ -973,6 +997,10 @@
 
   .minor-btn.active {
     color: #f59e0b;
+  }
+
+  .minor-btn.danger {
+    color: #dc2626;
   }
 
   .contact-btn {

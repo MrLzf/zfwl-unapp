@@ -29,9 +29,9 @@
       </button>
 
       <view class="summary-card">
-        <view class="summary-item" @tap="go('/pages/user/wallet/score')">
+        <view class="summary-item" @tap="go('/pages/tutor/recharge/index')">
           <view class="summary-value">{{ userInfo.point || 0 }}</view>
-          <view class="summary-label">我的积分 <text class="cicon-forward"></text></view>
+          <view class="summary-label">积分充值 <text class="cicon-forward"></text></view>
         </view>
         <view class="divider"></view>
         <view class="summary-item" @tap="go('/pages/tutor/my-posts/index')">
@@ -200,6 +200,31 @@
         icon: 'cicon-coin',
         path: '/pages/user/wallet/score',
         badge: `${userInfo.value.point || 0}积分`,
+      },
+      {
+        label: '积分充值',
+        icon: 'cicon-recharge',
+        path: '/pages/tutor/recharge/index',
+      },
+      {
+        label: '邀请好友',
+        icon: 'cicon-share',
+        path: '/pages/tutor/invite/index',
+      },
+      {
+        label: 'VIP 会员',
+        icon: 'cicon-vip',
+        path: '/pages/tutor/vip/index',
+      },
+      {
+        label: '订阅消息',
+        icon: 'cicon-notice',
+        path: '/pages/tutor/subscribe/index',
+      },
+      {
+        label: '在线客服',
+        icon: 'cicon-service',
+        path: '/pages/tutor/customer-service/index',
       },
       {
         label: '账号资料',

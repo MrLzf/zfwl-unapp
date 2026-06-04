@@ -72,6 +72,7 @@
           </view>
           <view class="actions">
             <button class="action-btn ss-reset-button" @tap="goDetail(item)">查看</button>
+            <button class="action-btn ss-reset-button" @tap="buyValueService(item)">推广</button>
             <button
               v-if="canOffline(item)"
               class="action-btn danger ss-reset-button"
@@ -153,6 +154,15 @@
 
   function goDetail(item) {
     uni.navigateTo({ url: `/pages/tutor/detail/index?type=${item.type}&id=${item.id}` });
+  }
+
+  function buyValueService(item) {
+    const targetType = item.type === 'req' ? 'demand' : 'resume';
+    uni.navigateTo({
+      url: `/pages/tutor/value-service/index?targetType=${targetType}&targetId=${
+        item.id
+      }&title=${encodeURIComponent(item.title || item.name || '')}`,
+    });
   }
 
   function goPublish() {

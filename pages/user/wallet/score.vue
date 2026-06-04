@@ -12,17 +12,17 @@
     <view v-if="state.insufficient" class="guide-card warning">
       <view>
         <view class="guide-title">积分不足</view>
-        <view class="guide-desc">查看联系方式需 10 积分，可联系平台客服充值或完成任务获取。</view>
+        <view class="guide-desc">查看联系方式需 10 积分，可选择积分包充值或完成任务获取。</view>
       </view>
-      <button class="guide-btn ss-reset-button" @tap="goService">联系客服</button>
+      <button class="guide-btn ss-reset-button" @tap="goRecharge">去充值</button>
     </view>
 
     <view class="guide-card">
       <view>
         <view class="guide-title">积分获取方式</view>
-        <view class="guide-desc">每日签到、完善资料、五星评价奖励、后台人工充值。</view>
+        <view class="guide-desc">每日签到、完善资料、五星评价奖励、积分包充值。</view>
       </view>
-      <button class="guide-btn ss-reset-button" @tap="goService">充值/客服</button>
+      <button class="guide-btn ss-reset-button" @tap="goRecharge">充值</button>
     </view>
     <view class="task-card">
       <view class="guide-title">做任务赚积分</view>
@@ -216,7 +216,11 @@
   }
 
   function goService() {
-    uni.switchTab({ url: '/pages/index/message' });
+    uni.navigateTo({ url: '/pages/tutor/customer-service/index' });
+  }
+
+  function goRecharge() {
+    uni.navigateTo({ url: '/pages/tutor/recharge/index' });
   }
 
   async function refreshScorePage() {

@@ -231,6 +231,84 @@
             "title": "高级筛选",
             "group": "家教"
           }
+        },
+        {
+          "path": "recharge/index",
+          "style": {
+            "navigationBarTitleText": "积分充值"
+          },
+          "meta": {
+            "auth": true,
+            "title": "积分充值",
+            "group": "家教"
+          }
+        },
+        {
+          "path": "invite/index",
+          "style": {
+            "navigationBarTitleText": "邀请好友",
+            "enableShareAppMessage": true
+          },
+          "meta": {
+            "auth": true,
+            "title": "邀请好友",
+            "group": "家教"
+          }
+        },
+        {
+          "path": "value-service/index",
+          "style": {
+            "navigationBarTitleText": "增值服务"
+          },
+          "meta": {
+            "auth": true,
+            "title": "增值服务",
+            "group": "家教"
+          }
+        },
+        {
+          "path": "vip/index",
+          "style": {
+            "navigationBarTitleText": "VIP 会员"
+          },
+          "meta": {
+            "auth": true,
+            "title": "VIP 会员",
+            "group": "家教"
+          }
+        },
+        {
+          "path": "subscribe/index",
+          "style": {
+            "navigationBarTitleText": "订阅消息"
+          },
+          "meta": {
+            "auth": true,
+            "title": "订阅消息",
+            "group": "家教"
+          }
+        },
+        {
+          "path": "customer-service/index",
+          "style": {
+            "navigationBarTitleText": "在线客服"
+          },
+          "meta": {
+            "auth": true,
+            "title": "在线客服",
+            "group": "家教"
+          }
+        },
+        {
+          "path": "complaint/index",
+          "style": {
+            "navigationBarTitleText": "举报投诉"
+          },
+          "meta": {
+            "auth": true,
+            "title": "举报投诉",
+            "group": "家教"
+          }
         }
       ]
     },
