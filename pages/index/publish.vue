@@ -537,7 +537,7 @@
   }
 
   .publish-shell {
-    padding: calc(var(--status-bar-height) + 28rpx) 24rpx 40rpx;
+    padding: calc(var(--status-bar-height) + 28rpx) 24rpx calc(220rpx + env(safe-area-inset-bottom));
   }
 
   .page-head {
@@ -767,6 +767,18 @@
     height: 80rpx;
     line-height: 80rpx;
     padding: 0 20rpx;
+  }
+
+  .picker-value {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    overflow: hidden;
+    color: #334155;
+    font-size: 24rpx;
+    line-height: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .field textarea {

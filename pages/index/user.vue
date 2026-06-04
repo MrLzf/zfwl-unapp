@@ -1,7 +1,11 @@
 <template>
   <s-layout title="" navbar="" tabbar="/pages/index/user" class="user-page">
     <view class="user-shell">
-      <view class="user-hero" :class="{ teacher: isTeacher, tappable: !isLogin }" @tap="handleHeroTap">
+      <view
+        class="user-hero"
+        :class="{ teacher: isTeacher, tappable: !isLogin }"
+        @tap="handleHeroTap"
+      >
         <view class="profile-main">
           <image
             class="avatar"
@@ -358,10 +362,12 @@
   .nickname {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 10rpx;
     color: #fff;
     font-size: 36rpx;
     font-weight: 900;
+    line-height: 44rpx;
   }
 
   .role-badge {
@@ -378,6 +384,8 @@
     margin-top: 10rpx;
     color: rgba(255, 255, 255, 0.82);
     font-size: 24rpx;
+    line-height: 34rpx;
+    word-break: break-all;
   }
 
   .login-card,

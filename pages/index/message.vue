@@ -9,7 +9,10 @@
         <text class="read-all" @tap="markAllRead">全部已读</text>
       </view>
 
-      <view v-if="error" class="state-card">
+      <view v-if="loading" class="state-card">
+        <text>消息加载中...</text>
+      </view>
+      <view v-else-if="error" class="state-card">
         <text>消息加载失败</text>
         <text class="retry" @tap="retry">重试</text>
       </view>
@@ -18,6 +21,7 @@
           v-for="item in categories"
           :key="item.category"
           class="message-card"
+          :class="{ loading: navigatingCategory === item.category }"
           @tap="openCategory(item)"
         >
           <view class="message-icon"><text :class="item.icon"></text></view>
@@ -80,9 +84,12 @@
   ];
   const categories = ref(baseCategories.map((item) => ({ ...item, unreadCount: 0 })));
   const error = ref(false);
+  const loading = ref(false);
+  const navigatingCategory = ref('');
 
   async function loadSummary() {
     error.value = false;
+    loading.value = true;
     try {
       const result = await TutorMessageApi.getSummary();
       if (result?.code !== 0) {
@@ -96,6 +103,8 @@
       }));
     } catch {
       error.value = true;
+    } finally {
+      loading.value = false;
     }
   }
   function retry() {
@@ -110,8 +119,12 @@
     categories.value = categories.value.map((item) => ({ ...item, unreadCount: 0 }));
   }
   function openCategory(item) {
+    navigatingCategory.value = item.category;
     uni.navigateTo({
       url: `/pages/tutor/messages/index?category=${item.category}&title=${item.title}`,
+      complete() {
+        navigatingCategory.value = '';
+      },
     });
   }
   onShow(() => {
@@ -129,9 +142,14 @@
   .message-shell {
     padding: calc(var(--status-bar-height) + 28rpx) 24rpx 40rpx;
   }
-  .page-head,
+  .page-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
   .message-title-row {
     display: flex;
+    min-width: 0;
     align-items: center;
     justify-content: space-between;
   }
@@ -167,6 +185,9 @@
     border-radius: 12rpx;
     background: #fff;
   }
+  .message-card.loading {
+    opacity: 0.68;
+  }
   .state-card {
     justify-content: space-between;
     margin-top: 28rpx;
@@ -189,9 +210,14 @@
     margin: 0 18rpx;
   }
   .message-title {
+    overflow: hidden;
+    min-width: 0;
+    flex: 1;
     color: #111827;
     font-size: 29rpx;
     font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .message-desc {
     overflow: hidden;
@@ -199,6 +225,8 @@
     white-space: nowrap;
   }
   .latest-time {
+    flex-shrink: 0;
+    margin-top: 0;
     margin-left: 12rpx;
     white-space: nowrap;
   }

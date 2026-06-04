@@ -9,7 +9,7 @@ assert.doesNotMatch(userPage, /class="hero-actions"/);
 assert.doesNotMatch(userPage, /class="hero-icon ss-reset-button"/);
 assert.match(
   userPage,
-  /<view class="user-hero" :class="\{ teacher: isTeacher, tappable: !isLogin \}" @tap="handleHeroTap">/,
+  /<view\s+class="user-hero"\s+:class="\{ teacher: isTeacher, tappable: !isLogin \}"\s+@tap="handleHeroTap"\s*>/,
   'logged-out user hero should be tappable for auth',
 );
 assert.match(

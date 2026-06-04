@@ -31,6 +31,17 @@ assert.match(summaryPage, /retry/, 'summary should expose retry');
 assert.match(summaryPage, /unread-count/, 'summary should render unread badges');
 assert.match(summaryPage, /latestContent/, 'summary should render latest content');
 assert.match(summaryPage, /latestTime/, 'summary should render latest time');
+assert.match(summaryPage, /\.message-title-row\s*{[^}]*min-width: 0/s, 'summary title row should shrink inside card');
+assert.match(
+  summaryPage,
+  /\.message-title\s*{[^}]*overflow: hidden[^}]*text-overflow: ellipsis[^}]*white-space: nowrap/s,
+  'summary title should ellipsize when timestamp is long',
+);
+assert.match(
+  summaryPage,
+  /\.latest-time\s*{[^}]*flex-shrink: 0/s,
+  'summary timestamp should keep its width without deforming content',
+);
 assert.match(summaryPage, /result\.data\?\.categories/, 'summary should read backend categories');
 assert.match(summaryPage, /result\?\.code !== 0/, 'summary should guard failed responses');
 assert.match(tabbar, /TutorMessageApi\.getSummary/, 'tabbar should refresh total unread count');

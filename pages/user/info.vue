@@ -149,7 +149,7 @@
   import {
     chooseAndUploadFile,
     uploadFilesFromPath,
-  } from '@/sheep/components/s-uploader/choose-and-upload-file';
+  } from '@/sheep/components/s-uploader/choose-and-upload-file.js';
 
   const state = reactive({
     model: {}, // 个人信息
