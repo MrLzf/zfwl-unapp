@@ -309,6 +309,39 @@
             "title": "举报投诉",
             "group": "家教"
           }
+        },
+        {
+          "path": "trial/index",
+          "style": {
+            "navigationBarTitleText": "预约试课"
+          },
+          "meta": {
+            "auth": true,
+            "title": "预约试课",
+            "group": "家教"
+          }
+        },
+        {
+          "path": "appointments/index",
+          "style": {
+            "navigationBarTitleText": "我的预约"
+          },
+          "meta": {
+            "auth": true,
+            "title": "我的预约",
+            "group": "家教"
+          }
+        },
+        {
+          "path": "escrow/index",
+          "style": {
+            "navigationBarTitleText": "担保交易"
+          },
+          "meta": {
+            "auth": true,
+            "title": "担保交易",
+            "group": "家教"
+          }
         }
       ]
     },

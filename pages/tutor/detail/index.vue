@@ -32,6 +32,7 @@
                   <text v-if="detail.verified">平台认证</text>
                   <text v-if="detail.urgent">加急需求</text>
                   <text v-if="detail.hasFreeTrial">支持试课</text>
+                  <text v-if="detail.teacherLevelName">{{ detail.teacherLevelName }}</text>
                   <text>{{ modeText(detail.mode) }}</text>
                 </view>
               </view>
@@ -136,6 +137,10 @@
         <button class="minor-btn ss-reset-button" @tap="confirmMatch">
           <text class="cicon-check-round"></text>
           <text>匹配</text>
+        </button>
+        <button v-if="isTutor && detail.hasFreeTrial" class="minor-btn ss-reset-button" @tap="goTrial">
+          <text class="cicon-time"></text>
+          <text>试课</text>
         </button>
         <button class="minor-btn ss-reset-button" @tap="goValueService">
           <text class="cicon-upload"></text>
@@ -529,6 +534,15 @@
       url: `/pages/tutor/value-service/index?targetType=${state.targetType}&targetId=${
         state.id
       }&title=${encodeURIComponent(state.detail.title || state.detail.name || '')}`,
+    });
+  }
+
+  function goTrial() {
+    if (!requireLogin()) return;
+    uni.navigateTo({
+      url: `/pages/tutor/trial/index?resumeId=${state.id}&teacherUserId=${
+        state.detail.userId || ''
+      }`,
     });
   }
 

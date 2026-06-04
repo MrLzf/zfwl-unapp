@@ -222,6 +222,16 @@
         path: '/pages/tutor/subscribe/index',
       },
       {
+        label: '试课预约',
+        icon: 'cicon-time',
+        path: '/pages/tutor/appointments/index',
+      },
+      {
+        label: '担保交易',
+        icon: 'cicon-order',
+        path: '/pages/tutor/escrow/index',
+      },
+      {
         label: '在线客服',
         icon: 'cicon-service',
         path: '/pages/tutor/customer-service/index',
