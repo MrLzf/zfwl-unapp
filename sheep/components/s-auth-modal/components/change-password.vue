@@ -10,6 +10,7 @@
     <!-- 表单项 -->
     <uni-forms
       ref="changePasswordRef"
+      class="auth-form"
       v-model="state.model"
       :rules="state.rules"
       validateTrigger="bind"
@@ -31,31 +32,24 @@
               :class="{ 'code-btn-end': state.isMobileEnd }"
               @tap="getSmsCode('changePassword')"
             >
-              {{ getSmsTimer('resetPassword') }}
+              {{ getSmsTimer('changePassword') }}
             </button>
           </template>
         </uni-easyinput>
       </uni-forms-item>
 
-      <uni-forms-item name="reNewPassword" label="密码">
+      <uni-forms-item name="password" label="密码">
         <uni-easyinput
           type="password"
           placeholder="请输入密码"
           v-model="state.model.password"
           :inputBorder="false"
-        >
-          <template v-slot:right>
-            <button class="ss-reset-button login-btn-start" @tap="changePasswordSubmit">
-              确认
-            </button>
-          </template>
-        </uni-easyinput>
+        />
       </uni-forms-item>
     </uni-forms>
 
-    <button class="ss-reset-button type-btn" @tap="closeAuthModal">
-      取消修改
-    </button>
+    <button class="ss-reset-button auth-submit-btn" @tap="changePasswordSubmit">确认修改</button>
+    <button class="ss-reset-button type-btn" @tap="closeAuthModal">取消修改</button>
   </view>
 </template>
 

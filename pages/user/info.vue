@@ -51,41 +51,25 @@
         </uni-forms-item>
         <uni-forms-item name="sex" label="性别">
           <view class="ss-flex ss-col-center ss-h-100">
-            <radio-group @change="onChangeGender" class="ss-flex ss-col-center">
-              <label class="radio" v-for="item in sexRadioMap" :key="item.value">
-                <view class="ss-flex ss-col-center ss-m-r-32">
+            <radio-group @change="onChangeGender" class="gender-group">
+              <label
+                class="gender-option"
+                :class="{ active: Number(item.value) === Number(state.model?.sex) }"
+                v-for="item in sexRadioMap"
+                :key="item.value"
+              >
+                <view class="gender-content">
                   <radio
                     :value="item.value"
                     color="var(--ui-BG-Main)"
-                    style="transform: scale(0.8)"
-                    :checked="parseInt(item.value) === state.model?.sex"
+                    class="gender-radio"
+                    :checked="Number(item.value) === Number(state.model?.sex)"
                   />
                   <view class="gender-name">{{ item.name }}</view>
                 </view>
               </label>
             </radio-group>
           </view>
-        </uni-forms-item>
-
-        <uni-forms-item name="mobile" label="手机号" @tap="onChangeMobile">
-          <uni-easyinput
-            v-model="userInfo.mobile"
-            placeholder="请绑定手机号"
-            :inputBorder="false"
-            disabled
-            :styles="{ disableColor: '#fff' }"
-            :placeholderStyle="placeholderStyle"
-            :clearable="false"
-          >
-            <template v-slot:right>
-              <view class="ss-flex ss-col-center">
-                <su-radio v-if="userInfo.verification?.mobile" :modelValue="true" />
-                <button v-else class="ss-reset-button ss-flex ss-col-center ss-row-center">
-                  <text class="_icon-forward" style="color: #bbbbbb; font-size: 26rpx"></text>
-                </button>
-              </view>
-            </template>
-          </uni-easyinput>
         </uni-forms-item>
 
         <uni-forms-item name="password" label="登录密码" @tap="onSetPassword">
@@ -156,7 +140,8 @@
 </template>
 
 <script setup>
-  import { computed, reactive, onBeforeMount } from 'vue';
+  import { computed, reactive } from 'vue';
+  import { onShow } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
   import { clone } from 'lodash-es';
   import { showAuthModal } from '@/sheep/hooks/useModal';
@@ -185,26 +170,21 @@
     },
   ];
 
-  const userInfo = computed(() => sheep.$store('user').userInfo);
+  const userStore = sheep.$store('user');
+  const userInfo = computed(() => userStore.userInfo);
 
   // 选择性别
-  function onChangeGender(e) {
-    state.model.sex = e.detail.value;
+  async function onChangeGender(e) {
+    await persistGender(Number(e.detail.value));
   }
-
-  // 修改手机号
-  const onChangeMobile = () => {
-    showAuthModal('changeMobile');
-  };
 
   // 选择微信的头像，进行上传
   async function onChooseAvatar(e) {
-    debugger;
     const tempUrl = e.detail.avatarUrl || '';
     if (!tempUrl) return;
     const files = await uploadFilesFromPath(tempUrl);
     if (files.length > 0) {
-      state.model.avatar = files[0].url;
+      await persistAvatar(files[0].url);
     }
   }
 
@@ -212,7 +192,27 @@
   async function onChangeAvatar() {
     const files = await chooseAndUploadFile({ type: 'image' });
     if (files.length > 0) {
-      state.model.avatar = files[0].url;
+      await persistAvatar(files[0].url);
+    }
+  }
+
+  async function persistAvatar(avatar) {
+    if (!avatar) return;
+    state.model.avatar = avatar;
+    userStore.userInfo = { ...userStore.userInfo, avatar };
+    const { code } = await UserApi.updateUserSilent({ avatar });
+    if (code === 0) {
+      await getUserInfo();
+    }
+  }
+
+  async function persistGender(sex) {
+    if (!sex || Number(state.model.sex) === Number(sex)) return;
+    state.model.sex = sex;
+    userStore.userInfo = { ...userStore.userInfo, sex, gender: sex };
+    const { code } = await UserApi.updateUserSilent({ sex });
+    if (code === 0) {
+      await getUserInfo();
     }
   }
 
@@ -263,8 +263,10 @@
   // 获得用户信息
   const getUserInfo = async () => {
     // 个人信息
-    const userInfo = await sheep.$store('user').getInfo();
-    state.model = clone(userInfo);
+    const userInfo = await userStore.getInfo();
+    const nextUserInfo = clone(userInfo || {});
+    nextUserInfo.sex = nextUserInfo.sex ?? nextUserInfo.gender ?? 0;
+    state.model = nextUserInfo;
 
     // 获得社交用户的信息
     if (sheep.$platform.name !== 'H5') {
@@ -273,7 +275,7 @@
     }
   };
 
-  onBeforeMount(() => {
+  onShow(() => {
     getUserInfo();
   });
 </script>
@@ -311,11 +313,46 @@
     opacity: 1;
   }
 
+  .gender-group {
+    display: flex;
+    align-items: center;
+    gap: 18rpx;
+  }
+
+  .gender-option {
+    min-width: 116rpx;
+    height: 58rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 18rpx;
+    border: 2rpx solid #e5e7eb;
+    border-radius: 999rpx;
+    background: #ffffff;
+    color: #64748b;
+  }
+
+  .gender-option.active {
+    border-color: var(--ui-BG-Main);
+    background: var(--ui-BG-Main-opacity-1);
+    color: var(--ui-BG-Main);
+  }
+
+  .gender-content {
+    display: flex;
+    align-items: center;
+    gap: 8rpx;
+  }
+
+  .gender-radio {
+    transform: scale(0.72);
+  }
+
   .gender-name {
     font-size: 28rpx;
-    font-weight: 500;
+    font-weight: 600;
     line-height: normal;
-    color: #333333;
+    color: inherit;
   }
 
   .title-box {
