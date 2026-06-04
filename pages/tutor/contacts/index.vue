@@ -25,7 +25,7 @@
             <view class="name">{{ item.title || item.name || targetTitle(item) }}</view>
             <view class="meta"
               >{{ item.targetType === 'resume' ? '教师简历' : '家长需求' }} ·
-              {{ item.createTime || '刚刚' }}</view
+              {{ formatDate(item.createTime) || '刚刚' }}</view
             >
           </view>
           <text class="cost"
@@ -97,7 +97,7 @@
     isNumericId,
     targetKey,
   } from '@/sheep/api/tutor/local-state';
-  import { normalizeDemand, normalizeResume } from '@/sheep/api/tutor/utils';
+  import { formatDateTime, normalizeDemand, normalizeResume } from '@/sheep/api/tutor/utils';
 
   const state = reactive({
     loading: false,
@@ -174,12 +174,12 @@
   }
 
   function formatDate(value) {
-    if (!value) return '30天内';
-    return dayjs(value).format('YYYY-MM-DD HH:mm');
+    return formatDateTime(value, '30天内');
   }
 
   function isExpired(value) {
-    return value ? dayjs(value).isBefore(dayjs()) : false;
+    const formatted = formatDateTime(value);
+    return formatted ? dayjs(formatted).isBefore(dayjs()) : false;
   }
 
   function copyText(text) {

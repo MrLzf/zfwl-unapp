@@ -56,8 +56,8 @@
 <script setup>
   import { ref } from 'vue';
   import { onShow } from '@dcloudio/uni-app';
-  import dayjs from 'dayjs';
   import PayWalletApi from '@/sheep/api/pay/wallet';
+  import { formatDateTime } from '@/sheep/api/tutor/utils';
 
   const balance = ref(0);
   const packages = ref([]);
@@ -71,8 +71,7 @@
   }
 
   function formatTime(time) {
-    if (!time) return '';
-    return dayjs(time).format('YYYY-MM-DD HH:mm');
+    return formatDateTime(time);
   }
 
   async function loadWallet() {

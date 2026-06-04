@@ -58,7 +58,7 @@
     removeLocalFavorite,
     targetKey,
   } from '@/sheep/api/tutor/local-state';
-  import { normalizeDemand, normalizeResume } from '@/sheep/api/tutor/utils';
+  import { formatDateTime, normalizeDemand, normalizeResume } from '@/sheep/api/tutor/utils';
 
   const activeTab = ref('resume');
   const state = reactive({
@@ -113,7 +113,7 @@
   }
 
   function timeText(item) {
-    return item.favoriteAt || item.createTime || '已收藏';
+    return formatDateTime(item.favoriteAt || item.createTime, '已收藏');
   }
 
   async function load() {

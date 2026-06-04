@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+
 export const TUTOR_ROLE = {
   PARENT: 1,
   TEACHER: 2,
@@ -253,6 +255,21 @@ export function formatPriceRange(min, max, fallback) {
   return '价格面议';
 }
 
+export function formatDateTime(value, fallback = '') {
+  if (value === undefined || value === null || value === '') {
+    return fallback;
+  }
+  const raw = String(value).trim();
+  if (/^\d{13}$/.test(raw)) {
+    return dayjs(Number(raw)).format('YYYY-MM-DD HH:mm:ss');
+  }
+  if (/^\d{10}$/.test(raw)) {
+    return dayjs(Number(raw) * 1000).format('YYYY-MM-DD HH:mm:ss');
+  }
+  const parsed = dayjs(value);
+  return parsed.isValid() ? parsed.format('YYYY-MM-DD HH:mm:ss') : raw || fallback;
+}
+
 export function normalizeDemand(item = {}, index = 0) {
   const subjects = toSubjectList(item.subjects || item.subject);
   const budget = item.budget || item.budgetMax || item.budgetMin || item.price || 0;
@@ -271,7 +288,7 @@ export function normalizeDemand(item = {}, index = 0) {
     mode: modeKey(item.teachMode || item.mode),
     budget,
     frequency: item.frequency || '频次面议',
-    createdAt: item.createdAt || item.createTime || '刚刚',
+    createdAt: formatDateTime(item.createdAt || item.createTime, '刚刚'),
     district: item.district || item.cityName || item.city || '同城',
     address: item.address || '',
     verified: item.verified ?? true,
@@ -305,7 +322,7 @@ export function normalizeResume(item = {}, index = 0) {
     distance: item.distanceKm ?? item.distance,
     mode: modeKey(item.teachMode || item.teachModes || item.mode),
     price,
-    createdAt: item.createdAt || item.createTime || '刚刚活跃',
+    createdAt: formatDateTime(item.createdAt || item.createTime, '刚刚活跃'),
     verified: item.verified ?? item.certificationStatus === TUTOR_AUDIT_STATUS.APPROVED,
     hasFreeTrial: item.hasFreeTrial ?? item.freeTrialEnabled,
     freeTrialMinutes: item.freeTrialMinutes,

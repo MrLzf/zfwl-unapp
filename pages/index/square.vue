@@ -122,7 +122,7 @@
             <view class="result-foot">
               <view class="mini-user">
                 <text class="cicon-time"></text>
-                <text>{{ item.createdAt }}</text>
+                <text>{{ formatDateTime(item.createdAt) }}</text>
               </view>
               <view class="mini-user">
                 <text class="cicon-location-on"></text>
@@ -159,6 +159,7 @@
   import { tutorItems, tutorSubjects } from '@/sheep/api/tutor/mock-data';
   import {
     formatDistance,
+    formatDateTime,
     getPageList,
     modeKey,
     modeText,

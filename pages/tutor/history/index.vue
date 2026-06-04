@@ -26,7 +26,7 @@
       <view v-for="item in filteredItems" :key="item.key" class="history-block">
         <view class="time-line">
           <text class="cicon-time"></text>
-          <text>{{ item.viewedAt || item.createTime }}</text>
+          <text>{{ formatDateTime(item.viewedAt || item.createTime) }}</text>
           <button class="delete-btn ss-reset-button" @tap.stop="remove(item)">删除</button>
         </view>
         <view class="history-card" @tap="goDetail(item)">
@@ -64,7 +64,7 @@
     isNumericId,
     targetKey,
   } from '@/sheep/api/tutor/local-state';
-  import { normalizeDemand, normalizeResume } from '@/sheep/api/tutor/utils';
+  import { formatDateTime, normalizeDemand, normalizeResume } from '@/sheep/api/tutor/utils';
 
   const activeTab = ref('resume');
   const state = reactive({

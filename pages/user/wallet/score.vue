@@ -95,6 +95,7 @@
   import SignInApi from '@/sheep/api/member/signin';
   import TutorPointApi from '@/sheep/api/tutor/point';
   import { getLocalPoints } from '@/sheep/api/tutor/local-state';
+  import { formatDateTime } from '@/sheep/api/tutor/utils';
 
   const userInfo = computed(() => sheep.$store('user').userInfo || {});
   const localPoints = ref(getLocalPoints());
@@ -143,7 +144,7 @@
   ];
 
   function formatTime(value) {
-    return value ? dayjs(value).format('YYYY-MM-DD HH:mm') : '';
+    return formatDateTime(value);
   }
 
   function fallbackRecords() {

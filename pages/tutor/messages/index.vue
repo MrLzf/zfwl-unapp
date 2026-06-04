@@ -17,7 +17,7 @@
       >
         <view class="message-head"
           ><text class="message-title">{{ item.title || title }}</text
-          ><text class="message-time">{{ item.createTime || item.time || '' }}</text></view
+          ><text class="message-time">{{ formatDateTime(item.createTime || item.time) }}</text></view
         >
         <view class="message-content">{{ item.content }}</view>
       </view>
@@ -32,6 +32,7 @@
   import { ref } from 'vue';
   import { onLoad, onReachBottom } from '@dcloudio/uni-app';
   import TutorMessageApi from '@/sheep/api/tutor/message';
+  import { formatDateTime } from '@/sheep/api/tutor/utils';
 
   const actionRoutes = {
     certification_detail: '/pages/tutor/certification/index',

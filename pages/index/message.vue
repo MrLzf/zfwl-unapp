@@ -24,7 +24,7 @@
           <view class="message-main">
             <view class="message-title-row">
               <text class="message-title">{{ item.title }}</text>
-              <text class="latest-time">{{ item.latestTime || '' }}</text>
+              <text class="latest-time">{{ formatDateTime(item.latestTime) }}</text>
             </view>
             <view class="message-desc">{{ item.latestContent || item.placeholder }}</view>
           </view>
@@ -44,6 +44,7 @@
   import sheep from '@/sheep';
   import { showAuthModal } from '@/sheep/hooks/useModal';
   import TutorMessageApi from '@/sheep/api/tutor/message';
+  import { formatDateTime } from '@/sheep/api/tutor/utils';
 
   const baseCategories = [
     {

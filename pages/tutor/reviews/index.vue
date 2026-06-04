@@ -22,7 +22,7 @@
               <view class="name">{{ item.title || item.name || targetTitle(item) }}</view>
               <view class="meta"
                 >{{ item.targetType === 'resume' ? '教师简历' : '家长需求' }} ·
-                {{ item.createTime || '刚刚' }}</view
+                {{ formatDate(item.createTime) || '刚刚' }}</view
               >
             </view>
             <text class="status" :class="{ success: isMatched(item) }">{{
@@ -130,7 +130,6 @@
 <script setup>
   import { computed, reactive, ref } from 'vue';
   import { onShow } from '@dcloudio/uni-app';
-  import dayjs from 'dayjs';
   import TutorInteractionApi from '@/sheep/api/tutor/interaction';
   import {
     addLocalReview,
@@ -143,7 +142,7 @@
     isNumericId,
     targetKey,
   } from '@/sheep/api/tutor/local-state';
-  import { normalizeDemand, normalizeResume } from '@/sheep/api/tutor/utils';
+  import { formatDateTime, normalizeDemand, normalizeResume } from '@/sheep/api/tutor/utils';
 
   const activeTab = ref('matches');
   const reviewTags = ['沟通顺畅', '信息真实', '耐心负责', '反馈及时', '效果明显'];
@@ -235,7 +234,7 @@
   }
 
   function formatDate(value) {
-    return value ? dayjs(value).format('YYYY-MM-DD HH:mm') : '';
+    return formatDateTime(value);
   }
 
   function goDetail(item) {
