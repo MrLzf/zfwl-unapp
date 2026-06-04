@@ -448,7 +448,7 @@
   }
 
   function loadContext() {
-    city.value = uni.getStorageSync('tutor_city') || {};
+    city.value = uni.getStorageSync('tutor_city') || uni.getStorageSync('tutor_located_city') || {};
     filters.value = uni.getStorageSync('tutor_filter') || {};
   }
 

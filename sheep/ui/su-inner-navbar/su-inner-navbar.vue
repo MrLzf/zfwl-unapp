@@ -27,14 +27,10 @@
         ]"
         :style="[{ height: sys_navBar - sys_statusBar + 'px' }]"
       >
-        <view class="icon-box ss-flex">
+        <view class="icon-box ss-flex back-only">
           <view class="icon-button icon-button-left ss-flex ss-row-center" @tap="onClickLeft">
             <text class="sicon-back" v-if="hasHistory" />
             <text class="sicon-home" v-else />
-          </view>
-          <view class="line"></view>
-          <view class="icon-button icon-button-right ss-flex ss-row-center" @tap="onClickRight">
-            <text class="sicon-more" />
           </view>
         </view>
         <slot name="center">
@@ -70,7 +66,6 @@
 
   import { reactive, onBeforeMount } from 'vue';
   import sheep from '@/sheep';
-  import { showMenuTools } from '@/sheep/hooks/useModal';
 
   // 本地数据
   const state = reactive({
@@ -154,10 +149,6 @@
     }
     emits('clickLeft');
   }
-  function onClickRight() {
-    showMenuTools();
-  }
-
   // 初始化
   const init = () => {
     // #ifdef MP-ALIPAY
@@ -175,36 +166,24 @@
 <style lang="scss" scoped>
   .icon-box {
     box-shadow: 0px 0px 4rpx rgba(51, 51, 51, 0.08), 0px 4rpx 6rpx 2rpx rgba(102, 102, 102, 0.12);
-    border-radius: 30rpx;
-    width: 134rpx;
+    border-radius: 34rpx;
+    width: 68rpx;
     height: 56rpx;
     margin-left: 8rpx;
     background: rgba(255, 255, 255, 0.88);
     border: 1px solid rgba(148, 163, 184, 0.28);
-    .line {
-      width: 2rpx;
-      height: 24rpx;
-      background: #e5e5e7;
-    }
     .sicon-back {
       font-size: 32rpx;
     }
     .sicon-home {
       font-size: 32rpx;
     }
-    .sicon-more {
-      font-size: 32rpx;
-    }
     .icon-button {
-      width: 67rpx;
+      width: 68rpx;
       height: 56rpx;
       &-left:hover {
         background: rgba(0, 0, 0, 0.16);
-        border-radius: 30rpx 0px 0px 30rpx;
-      }
-      &-right:hover {
-        background: rgba(0, 0, 0, 0.16);
-        border-radius: 0px 30rpx 30rpx 0px;
+        border-radius: 34rpx;
       }
     }
   }

@@ -199,15 +199,8 @@
     return false;
   }
 
-  async function selectCity(city) {
-    if (!city.opened) {
-      uni.showToast({
-        title: '该城市即将开放',
-        icon: 'none',
-      });
-      return;
-    }
-    const selected = {
+  function normalizeSelectedCity(city) {
+    return {
       id: city.id,
       code: city.code,
       name: city.name,
@@ -216,13 +209,24 @@
       opened: city.opened,
       hot: city.hot,
     };
+  }
+
+  async function applySelectedCity(city, { navigateBack = true, toastTitle } = {}) {
+    if (!city.opened) {
+      uni.showToast({
+        title: '该城市即将开放',
+        icon: 'none',
+      });
+      return;
+    }
+    const selected = normalizeSelectedCity(city);
     state.currentCity = selected;
     uni.setStorageSync('tutor_city', selected);
     syncLocalProfileCity(selected);
     try {
       const synced = await syncRemoteProfileCity(selected);
       uni.showToast({
-        title: synced === false ? '城市已本地切换，档案同步失败' : `已选择${city.name}`,
+        title: synced === false ? '城市已本地切换，档案同步失败' : toastTitle || `已选择${city.name}`,
         icon: 'none',
       });
     } catch (error) {
@@ -231,9 +235,15 @@
         icon: 'none',
       });
     }
-    setTimeout(() => {
-      uni.navigateBack();
-    }, 300);
+    if (navigateBack) {
+      setTimeout(() => {
+        uni.navigateBack();
+      }, 300);
+    }
+  }
+
+  async function selectCity(city) {
+    await applySelectedCity(city);
   }
 
   async function locateCity() {
@@ -254,11 +264,10 @@
         cityCode: matched.code,
         cityName: matched.name,
       });
-      if (!state.currentCity?.code && matched.opened) {
-        state.currentCity = matched;
-        uni.setStorageSync('tutor_city', matched);
-      }
-      uni.showToast({ title: `定位到${matched.name}`, icon: 'none' });
+      await applySelectedCity(matched, {
+        navigateBack: false,
+        toastTitle: `定位到${matched.name}`,
+      });
     } catch (error) {
       uni.showToast({
         title: '定位授权失败，请手动选择城市',
