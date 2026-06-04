@@ -1,7 +1,7 @@
 <template>
   <s-layout title="" navbar="" tabbar="/pages/index/user" class="user-page">
     <view class="user-shell">
-      <view class="user-hero" :class="{ teacher: isTeacher }">
+      <view class="user-hero" :class="{ teacher: isTeacher, tappable: !isLogin }" @tap="handleHeroTap">
         <view class="profile-main">
           <image
             class="avatar"
@@ -216,6 +216,12 @@
 
   function showAuth() {
     showAuthModal();
+  }
+
+  function handleHeroTap() {
+    if (!isLogin.value) {
+      showAuthModal();
+    }
   }
 
   function go(url) {

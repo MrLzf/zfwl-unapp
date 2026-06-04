@@ -575,9 +575,8 @@
   }
 
   .type-switch {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14rpx;
+    display: flex;
+    justify-content: center;
     margin: 28rpx 0 20rpx;
     padding: 8rpx;
     border-radius: 16rpx;
@@ -586,6 +585,7 @@
   }
 
   .type-btn {
+    width: 100%;
     height: 72rpx;
     border-radius: 12rpx;
     color: #475569;
@@ -596,10 +596,6 @@
   .type-btn.active {
     color: #ffffff;
     background: #2563eb;
-  }
-
-  .type-btn.disabled {
-    opacity: 0.56;
   }
 
   .empty-state,
