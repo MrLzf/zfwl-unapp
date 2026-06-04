@@ -6,9 +6,7 @@
           <text class="cicon-back"></text>
         </button>
         <text class="header-title">{{ isTutor ? '老师详情' : '需求详情' }}</text>
-        <button class="icon-btn ss-reset-button" @tap="shareDetail">
-          <text class="cicon-share"></text>
-        </button>
+        <view class="header-spacer"></view>
       </view>
 
       <view v-if="state.errorMsg" class="state-card">
@@ -367,13 +365,6 @@
     uni.switchTab({ url: '/pages/index/square' });
   }
 
-  function shareDetail() {
-    uni.setClipboardData({
-      data: `/pages/tutor/detail/index?targetType=${state.targetType}&id=${state.id}`,
-      success: () => uni.showToast({ title: '链接已复制', icon: 'none' }),
-    });
-  }
-
   function normalizeDetailPayload(payload = {}) {
     const targetType = payload.targetType || state.targetType;
     if (targetType === 'resume') {
@@ -572,8 +563,16 @@
     } else {
       state.currentMatch = confirmLocalMatch(match.id || match.key);
     }
-    uni.showToast({ title: '匹配已确认', icon: 'none' });
-    state.showReviewModal = true;
+    if (isReviewableMatch(state.currentMatch)) {
+      uni.showToast({ title: '匹配已确认', icon: 'none' });
+      state.showReviewModal = true;
+    } else {
+      uni.showToast({ title: '已确认，等待对方确认后可评价', icon: 'none' });
+    }
+  }
+
+  function isReviewableMatch(match) {
+    return Number(match?.status) === 40 || Boolean(match?.matchedTime);
   }
 
   function toggleReviewTag(tag) {
@@ -589,6 +588,10 @@
     const match = state.currentMatch || (await findCurrentMatch());
     if (!match) {
       uni.showToast({ title: '请先确认匹配', icon: 'none' });
+      return;
+    }
+    if (!isReviewableMatch(match)) {
+      uni.showToast({ title: '等待对方确认后可评价', icon: 'none' });
       return;
     }
     const payload = {
@@ -661,6 +664,11 @@
     justify-content: center;
     color: #334155;
     font-size: 34rpx;
+  }
+
+  .header-spacer {
+    width: 64rpx;
+    height: 64rpx;
   }
 
   .detail-scroll {

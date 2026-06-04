@@ -31,5 +31,11 @@ assert.match(
   /if \(!isLogin\.value \|\| !profile\.value\?\.role\) \{\s*return;\s*\}/,
   'square should not load market data for guests or users without a tutor role',
 );
+assert.match(
+  squarePage,
+  /<view class="top-bar" @tap="goCity">[\s\S]*<view class="title-line">[\s\S]*<text class="page-title">\{\{ pageTitle \}\}<\/text>[\s\S]*class="city-chip"/,
+  'square title area should be the location switch entry',
+);
+assert.doesNotMatch(squarePage, /class="city-btn/);
 
 console.log('tutor square role visibility regression checks passed');

@@ -38,8 +38,13 @@
           </view>
           <view class="actions">
             <button class="ghost-btn ss-reset-button" @tap="goDetail(item)">查看详情</button>
-            <button class="primary-btn ss-reset-button" @tap="handleMatchAction(item)">
-              {{ isMatched(item) ? '去评价' : '确认匹配' }}
+            <button
+              class="primary-btn ss-reset-button"
+              :class="{ done: isReviewed(item) }"
+              :disabled="isReviewed(item)"
+              @tap="handleMatchAction(item)"
+            >
+              {{ isReviewed(item) ? '已评价' : isMatched(item) ? '去评价' : '确认匹配' }}
             </button>
           </view>
         </view>
@@ -164,6 +169,7 @@
   const fiveStarCount = computed(
     () => reviews.value.filter((item) => Number(item.rating) === 5).length,
   );
+  const reviewedMatchIds = computed(() => new Set(reviews.value.map((item) => String(item.matchId))));
   const avgRating = computed(() => {
     if (!reviews.value.length) return '0.0';
     const total = reviews.value.reduce((sum, item) => sum + Number(item.rating || 0), 0);
@@ -215,7 +221,11 @@
   }
 
   function isMatched(item) {
-    return Number(item.status) >= 30 || Boolean(item.matchedTime);
+    return Number(item.status) === 40 || Boolean(item.matchedTime);
+  }
+
+  function isReviewed(item) {
+    return reviewedMatchIds.value.has(String(item.id));
   }
 
   function targetTitle(item) {
@@ -237,6 +247,9 @@
   }
 
   async function handleMatchAction(item) {
+    if (isReviewed(item)) {
+      return;
+    }
     if (isMatched(item)) {
       openReview(item);
       return;
@@ -252,8 +265,12 @@
       const updated = confirmLocalMatch(item.id || item.key);
       Object.assign(item, updated || {}, { statusName: '匹配成功' });
     }
-    uni.showToast({ title: '匹配已确认', icon: 'none' });
-    openReview(item);
+    if (isMatched(item)) {
+      uni.showToast({ title: '匹配已确认', icon: 'none' });
+      openReview(item);
+    } else {
+      uni.showToast({ title: '已确认，等待对方确认后可评价', icon: 'none' });
+    }
   }
 
   function openReview(item) {
@@ -275,6 +292,11 @@
 
   async function submitReview() {
     if (!state.currentMatch) return;
+    if (isReviewed(state.currentMatch)) {
+      uni.showToast({ title: '已评价，请勿重复提交', icon: 'none' });
+      state.showReviewModal = false;
+      return;
+    }
     const payload = {
       matchId: state.currentMatch.id,
       rating: form.rating,
@@ -455,6 +477,11 @@
   .primary-btn {
     color: #ffffff;
     background: #2563eb;
+  }
+
+  .primary-btn.done {
+    color: #64748b;
+    background: #e2e8f0;
   }
 
   .stars {

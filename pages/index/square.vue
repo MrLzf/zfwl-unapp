@@ -1,15 +1,17 @@
 <template>
   <s-layout title="" navbar="" tabbar="/pages/index/square" class="square-page">
     <view class="square-shell">
-      <view class="top-bar">
+      <view class="top-bar" @tap="goCity">
         <view>
-          <view class="page-title">{{ pageTitle }}</view>
+          <view class="title-line">
+            <text class="page-title">{{ pageTitle }}</text>
+            <view class="city-chip">
+              <text class="cicon-location-on"></text>
+              <text>{{ city.name || '切换定位' }}</text>
+            </view>
+          </view>
           <view class="page-subtitle">{{ city.name || '杭州' }} · 同城高匹配信息</view>
         </view>
-        <button class="city-btn ss-reset-button" @tap="goCity">
-          <text class="cicon-location-on"></text>
-          <text>{{ city.name || '切换' }}</text>
-        </button>
       </view>
 
       <view v-if="!isLogin" class="login-gate">
@@ -493,6 +495,7 @@
   }
 
   .top-bar,
+  .title-line,
   .result-top,
   .title-row,
   .result-foot,
@@ -503,7 +506,7 @@
   }
 
   .top-bar {
-    justify-content: space-between;
+    justify-content: flex-start;
   }
 
   .page-title {
@@ -512,22 +515,27 @@
     font-weight: 900;
   }
 
+  .title-line {
+    gap: 12rpx;
+    flex-wrap: wrap;
+  }
+
   .page-subtitle {
     margin-top: 8rpx;
     color: #64748b;
     font-size: 24rpx;
   }
 
-  .city-btn {
-    height: 62rpx;
+  .city-chip {
+    height: 42rpx;
     display: flex;
     align-items: center;
-    gap: 6rpx;
-    padding: 0 18rpx;
+    gap: 4rpx;
+    padding: 0 12rpx;
     border-radius: 999rpx;
     color: #2563eb;
     background: #eff6ff;
-    font-size: 24rpx;
+    font-size: 22rpx;
     font-weight: 700;
   }
 

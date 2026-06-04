@@ -4,7 +4,7 @@
       <view class="page-head">
         <view>
           <view class="page-title">消息</view>
-          <view class="page-subtitle">审核结果、联系记录和积分变动</view>
+          <view class="page-subtitle">审核、联系、匹配、评价和积分变动</view>
         </view>
         <text class="read-all" @tap="markAllRead">全部已读</text>
       </view>
@@ -57,6 +57,18 @@
       title: '联系记录',
       placeholder: '查看联系方式后的沟通记录',
       icon: 'cicon-chat-o',
+    },
+    {
+      category: 'match',
+      title: '匹配通知',
+      placeholder: '双方确认匹配后的提醒',
+      icon: 'cicon-check-round',
+    },
+    {
+      category: 'review',
+      title: '评价通知',
+      placeholder: '收到评价后的提醒',
+      icon: 'cicon-star',
     },
     {
       category: 'point',

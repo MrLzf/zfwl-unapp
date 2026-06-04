@@ -66,12 +66,13 @@
   const userInfo = computed(() => sheep.$store('user').userInfo);
 
   const accountLoginRef = ref(null);
+  const DEFAULT_AVATAR = '/static/data-empty.png';
 
   // 数据
   const state = reactive({
     model: {
       nickname: userInfo.value.nickname,
-      avatar: userInfo.value.avatar,
+      avatar: userInfo.value.avatar || DEFAULT_AVATAR,
     },
     rules: {},
     disabledStyle: {
@@ -98,18 +99,14 @@
   // 确认授权
   async function onConfirm() {
     const { model } = state;
-    const { nickname, avatar } = model;
+    const { nickname } = model;
     if (!nickname) {
       sheep.$helper.toast('请输入昵称');
       return;
     }
-    if (!avatar) {
-      sheep.$helper.toast('请选择头像');
-      return;
-    }
     // 发起更新
     const { code } = await UserApi.updateUser({
-      avatar: state.model.avatar,
+      avatar: state.model.avatar || DEFAULT_AVATAR,
       nickname: state.model.nickname,
     });
     // 更新成功

@@ -219,36 +219,73 @@
     isTeacher.value ? '搜索家长需求、科目或年级' : '搜索科目、老师或年级',
   );
 
-  const quickActions = computed(() => [
-    {
-      label: '找老师',
-      icon: 'cicon-book',
-      color: 'blue',
-      path: '/pages/index/square',
-      tab: true,
-    },
-    {
-      label: '找家长',
-      icon: 'cicon-group',
-      color: 'orange',
-      path: '/pages/index/square',
-      tab: true,
-    },
-    {
-      label: isTeacher.value ? '发布简历' : '发布需求',
-      icon: 'cicon-flash-on',
-      color: 'green',
-      publishRole: isTeacher.value ? 'teacher' : 'parent',
-      auth: true,
-    },
-    {
-      label: '认证',
-      icon: 'cicon-check-round',
-      color: 'purple',
-      path: '/pages/tutor/certification/index',
-      auth: true,
-    },
-  ]);
+  const quickActions = computed(() => {
+    if (!userStore.isLogin || !state.profile?.role) {
+      return [
+        {
+          label: '找老师',
+          icon: 'cicon-book',
+          color: 'blue',
+          path: '/pages/index/square',
+          tab: true,
+        },
+        {
+          label: '选择身份',
+          icon: 'cicon-my',
+          color: 'orange',
+          path: '/pages/tutor/identity/index',
+          auth: true,
+        },
+        {
+          label: '免费发布',
+          icon: 'cicon-flash-on',
+          color: 'green',
+          auth: true,
+        },
+      ];
+    }
+    if (isTeacher.value) {
+      return [
+        {
+          label: '找家长',
+          icon: 'cicon-group',
+          color: 'orange',
+          path: '/pages/index/square',
+          tab: true,
+        },
+        {
+          label: '发布简历',
+          icon: 'cicon-flash-on',
+          color: 'green',
+          publishRole: 'teacher',
+          auth: true,
+        },
+        {
+          label: '认证',
+          icon: 'cicon-check-round',
+          color: 'purple',
+          path: '/pages/tutor/certification/index',
+          auth: true,
+        },
+      ];
+    }
+    return [
+      {
+        label: '找老师',
+        icon: 'cicon-book',
+        color: 'blue',
+        path: '/pages/index/square',
+        tab: true,
+      },
+      {
+        label: '发布需求',
+        icon: 'cicon-flash-on',
+        color: 'green',
+        publishRole: 'parent',
+        auth: true,
+      },
+    ];
+  });
 
   const banners = [
     {

@@ -87,6 +87,7 @@
   import TutorCityApi from '@/sheep/api/tutor/city';
 
   const emits = defineEmits(['onConfirm', 'roleChange']);
+  const DEFAULT_AVATAR = '/static/data-empty.png';
 
   const props = defineProps({
     agreeStatus: {
@@ -205,13 +206,22 @@
     }
   }
 
-  async function syncUserName() {
+  async function syncUserInfo() {
+    const userStore = sheep.$store('user');
+    const userInfo = userStore.userInfo || {};
     const nickname = state.model.name.trim();
-    if (!nickname) {
+    const payload = {};
+    if (nickname) {
+      payload.nickname = nickname;
+    }
+    if (!userInfo.avatar) {
+      payload.avatar = DEFAULT_AVATAR;
+    }
+    if (!Object.keys(payload).length) {
       return;
     }
-    await UserApi.updateUserSilent({ nickname });
-    await sheep.$store('user').getInfo();
+    await UserApi.updateUserSilent(payload);
+    await userStore.getInfo();
   }
 
   async function smsLoginSubmit() {
@@ -238,7 +248,7 @@
       if (loginRes.data?.tutorProfile) {
         sheep.$store('user').setTutorProfile(loginRes.data.tutorProfile);
       }
-      await syncUserName();
+      await syncUserInfo();
       if (!loginRes.data?.tutorProfile) {
         await initTutorProfile();
       }

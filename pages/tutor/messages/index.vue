@@ -37,6 +37,7 @@
     certification_detail: '/pages/tutor/certification/index',
     my_posts: '/pages/tutor/my-posts/index',
     contact_records: '/pages/tutor/contacts/index',
+    match_reviews: '/pages/tutor/reviews/index',
     point_records: '/pages/user/wallet/score',
   };
   const category = ref('');

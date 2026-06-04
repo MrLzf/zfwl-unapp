@@ -25,4 +25,7 @@ assert.match(
   'favorite and match labels should fit inside the fixed-height action buttons',
 );
 
+assert.doesNotMatch(detailPage, /cicon-share|shareDetail/);
+assert.match(detailPage, /class="header-spacer"/);
+
 console.log('tutor detail action bar regression checks passed');
