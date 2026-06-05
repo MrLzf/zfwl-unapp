@@ -90,6 +90,7 @@
         : isNumericId(item.targetId)
         ? item
         : getLocalItem('resume', item.targetId);
+      if (!source) return null;
       return {
         ...normalizeResume(source, index),
         ...item,
@@ -103,6 +104,7 @@
       : isNumericId(item.targetId)
       ? item
       : getLocalItem('demand', item.targetId);
+    if (!source) return null;
     return {
       ...normalizeDemand(source, index),
       ...item,

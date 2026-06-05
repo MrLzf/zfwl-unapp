@@ -420,6 +420,10 @@
       }
       if (!loaded) {
         loaded = getLocalItem(state.targetType, state.id);
+        if (!loaded) {
+          state.errorMsg = '内容不存在或已下架';
+          return;
+        }
         state.usingLocal = true;
         state.contactUnlocked = false;
         state.contact = null;

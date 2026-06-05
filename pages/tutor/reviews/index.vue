@@ -183,6 +183,7 @@
       : isNumericId(targetId)
       ? item
       : getLocalItem(targetType, targetId);
+    if (!source) return null;
     const normalized =
       targetType === 'resume' ? normalizeResume(source, index) : normalizeDemand(source, index);
     return {

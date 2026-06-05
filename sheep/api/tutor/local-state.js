@@ -1,5 +1,4 @@
 import dayjs from 'dayjs';
-import { tutorItems } from '@/sheep/api/tutor/mock-data';
 import { normalizeDemand, normalizeResume, maskMobile } from '@/sheep/api/tutor/utils';
 
 const KEYS = {
@@ -49,15 +48,15 @@ function normalizeLocalItem(item, index = 0) {
 
 export function getLocalItem(targetType, targetId) {
   const type = getTargetType(targetType);
-  const direct = tutorItems.find((item) => String(item.id) === String(targetId));
-  if (direct) return normalizeLocalItem(direct);
-  const byPrefix = tutorItems.find(
-    (item) => getTargetType(item) === type && String(item.id) === String(targetId),
-  );
-  if (byPrefix) return normalizeLocalItem(byPrefix);
-  return normalizeLocalItem(
-    tutorItems.find((item) => getTargetType(item) === type) || tutorItems[0],
-  );
+  const key = targetKey(type, targetId);
+  const sources = [
+    ...readList(KEYS.favorites),
+    ...readList(KEYS.history),
+    ...readList(KEYS.contacts),
+  ];
+  const found = sources.find((item) => item.key === key || (String(item.id) === String(targetId) && getTargetType(item) === type));
+  if (found) return normalizeLocalItem(found);
+  return null;
 }
 
 export function getLocalPoints() {

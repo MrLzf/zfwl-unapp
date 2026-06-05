@@ -66,11 +66,6 @@
             </button>
           </view>
         </view>
-
-        <view v-if="state.usingMock && displayItems.length" class="offline-tip">
-          当前展示本地示例数据，服务恢复后会自动同步最新信息。
-        </view>
-
         <view v-if="state.errorMsg && !displayItems.length" class="state-card">
           <view class="state-icon danger"><text class="cicon-warn"></text></view>
           <view class="state-title">加载失败</view>
@@ -156,7 +151,7 @@
   import { showAuthModal } from '@/sheep/hooks/useModal';
   import TutorMarketApi from '@/sheep/api/tutor/market';
   import { getCachedLocation, getLocationPayload } from '@/sheep/api/tutor/location';
-  import { tutorItems, tutorSubjects } from '@/sheep/api/tutor/mock-data';
+  import { tutorSubjects } from '@/sheep/api/tutor/mock-data';
   import {
     formatDistance,
     formatDateTime,
@@ -190,7 +185,6 @@
     pageSize: 8,
     total: 0,
     loadStatus: 'more',
-    usingMock: false,
   });
 
   const pageTitle = computed(() => (isTeacher.value ? '需求广场' : '老师广场'));
@@ -359,60 +353,7 @@
   }
 
   function fetchLocalList() {
-    let list = tutorItems.map((item, index) =>
-      item.type === 'tutor' ? normalizeResume(item, index) : normalizeDemand(item, index),
-    );
-    const advanced = filters.value || {};
-    list = list.filter((item) => item.type === targetType.value);
-    if (activeSubject.value)
-      list = list.filter((item) => item.subjects.includes(activeSubject.value));
-    if (advanced.subjects?.length) {
-      list = list.filter((item) =>
-        advanced.subjects.some((subject) => item.subjects.includes(subject)),
-      );
-    }
-    if (advanced.grades?.length) {
-      list = list.filter((item) =>
-        advanced.grades.some((grade) => String(item.grade || '').includes(grade)),
-      );
-    }
-    if (advanced.modes?.length) {
-      list = list.filter((item) => {
-        const key = modeKey(item.mode);
-        return advanced.modes.some((mode) => mode === 'both' || key === mode || key === 'both');
-      });
-    }
-    if (advanced.priceMin || advanced.priceMax) {
-      const min = Number(advanced.priceMin || 0);
-      const max = Number(advanced.priceMax || 99999);
-      list = list.filter(
-        (item) =>
-          Number(item.budget || item.price || 0) >= min &&
-          Number(item.budget || item.price || 0) <= max,
-      );
-    }
-    const distanceLimit =
-      activeDistance.value !== 999
-        ? activeDistance.value
-        : advanced.distanceKm !== 999
-        ? advanced.distanceKm
-        : undefined;
-    if (distanceLimit)
-      list = list.filter((item) => Number(item.distance || 999) <= Number(distanceLimit));
-    if (advanced.certified) list = list.filter((item) => item.type !== 'tutor' || item.verified);
-    if (advanced.freeTrialEnabled)
-      list = list.filter((item) => item.type !== 'tutor' || item.hasFreeTrial);
-    const sortType = activeSort.value !== 'default' ? activeSort.value : advanced.sortType;
-    if (sortType === 'distance')
-      list.sort((a, b) => Number(a.distance || 999) - Number(b.distance || 999));
-    if (sortType === 'latest')
-      list.sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
-    const start = (state.pageNo - 1) * state.pageSize;
-    const end = start + state.pageSize;
-    return {
-      list: list.slice(start, end),
-      total: list.length,
-    };
+    return { list: [], total: 0 };
   }
 
   async function loadList(refresh = false) {
@@ -425,23 +366,15 @@
     state.errorMsg = '';
     try {
       const page = await fetchRemoteList();
-      const data = page || fetchLocalList();
-      state.usingMock = !page;
-      state.list = refresh ? data.list : [...state.list, ...data.list];
-      state.total = data.total;
-      state.loadStatus = state.list.length < state.total ? 'more' : 'noMore';
-      if (!page && !data.list.length) {
-        state.errorMsg = '暂时无法连接服务，请稍后重试';
+      if (page) {
+        state.list = refresh ? page.list : [...state.list, ...page.list];
+        state.total = page.total;
+        state.loadStatus = state.list.length < state.total ? 'more' : 'noMore';
+      } else {
+        state.errorMsg = '暂时无法加载数据，请稍后重试';
       }
     } catch (error) {
-      const data = fetchLocalList();
-      state.usingMock = true;
-      state.list = refresh ? data.list : [...state.list, ...data.list];
-      state.total = data.total;
-      state.loadStatus = state.list.length < state.total ? 'more' : 'noMore';
-      if (!data.list.length) {
-        state.errorMsg = '网络请求出错，请稍后重试';
-      }
+      state.errorMsg = '网络请求出错，请稍后重试';
     } finally {
       state.loading = false;
     }

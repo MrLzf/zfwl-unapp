@@ -24,13 +24,16 @@
       </view>
     </view>
 
-    <view class="list">
-      <view v-for="item in results" :key="item.id" class="card" @tap="goDetail(item)">
+    <view v-if="searching" class="list">
+      <view v-for="n in 3" :key="n" class="skeleton-card" />
+    </view>
+
+    <view v-else class="list">
+      <view v-for="item in results" :key="`${item.type}-${item.id}`" class="card" @tap="goDetail(item)">
         <view class="title">{{ item.title || item.name }}</view>
         <view class="meta"
-          >{{ item.district }} · {{ item.subjects.join('、') }} · ¥{{
-            item.budget || item.price
-          }}/时</view
+          >{{ [item.district, item.subjects?.join('、')].filter(Boolean).join(' · ') }}
+          <template v-if="item.budget || item.price"> · ¥{{ item.budget || item.price }}/时</template></view
         >
       </view>
     </view>
@@ -40,22 +43,56 @@
 </template>
 
 <script setup>
-  import { computed, ref } from 'vue';
-  import { tutorItems, tutorSubjects } from '@/sheep/api/tutor/mock-data';
+  import { ref, watch } from 'vue';
+  import TutorMarketApi from '@/sheep/api/tutor/market';
+  import { tutorSubjects } from '@/sheep/api/tutor/mock-data';
+  import {
+    getPageList,
+    normalizeDemand,
+    normalizeResume,
+  } from '@/sheep/api/tutor/utils';
 
   const keyword = ref('');
+  const results = ref([]);
+  const searching = ref(false);
+  let searchTimer = null;
   const hotWords = ['高中数学', '英语口语', '物理冲刺', ...tutorSubjects];
 
-  const results = computed(() => {
-    const key = keyword.value.trim();
+  async function runSearch(key) {
     if (!key) {
-      return [];
+      results.value = [];
+      return;
     }
-    return tutorItems.filter((item) =>
-      [item.title, item.name, item.grade, item.education, item.district, ...item.subjects]
-        .filter(Boolean)
-        .some((text) => String(text).includes(key)),
-    );
+    searching.value = true;
+    try {
+      const [resumeRes, demandRes] = await Promise.all([
+        TutorMarketApi.getResumePage({ pageNo: 1, pageSize: 20 }),
+        TutorMarketApi.getDemandPage({ pageNo: 1, pageSize: 20 }),
+      ]);
+      const remoteItems = [
+        ...(resumeRes?.code === 0 ? getPageList(resumeRes.data).map(normalizeResume) : []),
+        ...(demandRes?.code === 0 ? getPageList(demandRes.data).map(normalizeDemand) : []),
+      ];
+      results.value = remoteItems.filter((item) =>
+        [item.title, item.name, item.grade, item.education, item.district, ...(item.subjects || [])]
+          .filter(Boolean)
+          .some((text) => String(text).includes(key)),
+      );
+    } catch {
+      results.value = [];
+    } finally {
+      searching.value = false;
+    }
+  }
+
+  watch(keyword, (val) => {
+    clearTimeout(searchTimer);
+    const key = val.trim();
+    if (!key) {
+      results.value = [];
+      return;
+    }
+    searchTimer = setTimeout(() => runSearch(key), 350);
   });
 
   function goDetail(item) {
@@ -140,4 +177,17 @@
     color: #64748b;
     font-size: 24rpx;
   }
+  .skeleton-card {
+    height: 140rpx;
+    border-radius: 12rpx;
+    background: linear-gradient(90deg, #ffffff 0%, #f1f5f9 50%, #ffffff 100%);
+    background-size: 200% 100%;
+    animation: search-pulse 1.2s infinite linear;
+  }
+
+  @keyframes search-pulse {
+    from { background-position: 100% 0; }
+    to { background-position: -100% 0; }
+  }
+
 </style>

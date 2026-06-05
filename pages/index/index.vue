@@ -188,7 +188,6 @@
   import { showAuthModal } from '@/sheep/hooks/useModal';
   import TutorMarketApi from '@/sheep/api/tutor/market';
   import { getLocationPayload } from '@/sheep/api/tutor/location';
-  import { tutorRequests, tutorTeachers } from '@/sheep/api/tutor/mock-data';
   import {
     TUTOR_ROLE,
     formatDistance,
@@ -326,12 +325,8 @@
       : { title: '优质教师', icon: 'cicon-check-round' },
   );
 
-  const topTeachers = computed(() =>
-    (state.teachers.length ? state.teachers : tutorTeachers).slice(0, 6),
-  );
-  const hotRequests = computed(() =>
-    (state.requests.length ? state.requests : tutorRequests).slice(0, 6),
-  );
+  const topTeachers = computed(() => state.teachers.slice(0, 6));
+  const hotRequests = computed(() => state.requests.slice(0, 6));
 
   function loadCity() {
     state.city = uni.getStorageSync('tutor_city') || uni.getStorageSync('tutor_located_city') || {};
@@ -366,13 +361,9 @@
       TutorMarketApi.getDemandPage(params),
     ]);
     state.teachers =
-      resumeResult?.code === 0 && getPageList(resumeResult.data).length
-        ? getPageList(resumeResult.data).map(normalizeResume)
-        : tutorTeachers;
+      resumeResult?.code === 0 ? getPageList(resumeResult.data).map(normalizeResume) : [];
     state.requests =
-      demandResult?.code === 0 && getPageList(demandResult.data).length
-        ? getPageList(demandResult.data).map(normalizeDemand)
-        : tutorRequests;
+      demandResult?.code === 0 ? getPageList(demandResult.data).map(normalizeDemand) : [];
   }
 
   function ensureAuth(callback) {
