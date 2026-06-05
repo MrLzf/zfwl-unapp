@@ -80,7 +80,8 @@ http.interceptors.request.use(
     // 自定义处理【loading 加载中】：如果需要显示 loading，则显示 loading
     if (config.custom.showLoading) {
       LoadingInstance.count++;
-      LoadingInstance.count === 1 &&
+      if (LoadingInstance.count === 1) {
+        uni.hideLoading();
         uni.showLoading({
           title: config.custom.loadingMsg,
           mask: true,
@@ -88,6 +89,7 @@ http.interceptors.request.use(
             uni.hideLoading();
           },
         });
+      }
     }
 
     // 增加 token 令牌、terminal 终端、tenant 租户的请求头

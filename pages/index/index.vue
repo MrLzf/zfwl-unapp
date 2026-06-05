@@ -446,8 +446,16 @@
 
   async function refresh() {
     loadCity();
-    await loadProfile();
-    await loadRecommendations();
+    try {
+      await loadProfile();
+    } catch (e) {
+      // ignore profile load errors (e.g. 401 expired token)
+    }
+    try {
+      await loadRecommendations();
+    } catch (e) {
+      // ignore recommendation load errors
+    }
   }
 
   onShow(refresh);
