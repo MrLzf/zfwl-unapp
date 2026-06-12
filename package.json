@@ -44,7 +44,7 @@
     "declaration": {
       "ads": "无",
       "data": "无",
-      "permissions": "无"
+      "permissions": "定位、相机、网络、拨号、存储"
     },
     "npmurl": ""
   },

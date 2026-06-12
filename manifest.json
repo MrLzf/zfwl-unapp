@@ -36,33 +36,12 @@
           "<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\"/>",
           "<uses-permission android:name=\"android.permission.VIBRATE\"/>",
           "<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>",
-          "<uses-permission android:name=\"android.permission.ACCESS_MOCK_LOCATION\"/>",
           "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",
           "<uses-permission android:name=\"android.permission.ACCESS_WIFI_STATE\"/>",
           "<uses-permission android:name=\"android.permission.CALL_PHONE\"/>",
           "<uses-permission android:name=\"android.permission.CAMERA\"/>",
-          "<uses-permission android:name=\"android.permission.CHANGE_NETWORK_STATE\"/>",
-          "<uses-permission android:name=\"android.permission.CHANGE_WIFI_STATE\"/>",
-          "<uses-permission android:name=\"android.permission.FLASHLIGHT\"/>",
-          "<uses-permission android:name=\"android.permission.GET_ACCOUNTS\"/>",
-          "<uses-permission android:name=\"android.permission.GET_TASKS\"/>",
           "<uses-permission android:name=\"android.permission.INTERNET\"/>",
-          "<uses-permission android:name=\"android.permission.MODIFY_AUDIO_SETTINGS\"/>",
-          "<uses-permission android:name=\"android.permission.MOUNT_UNMOUNT_FILESYSTEMS\"/>",
-          "<uses-permission android:name=\"android.permission.READ_CONTACTS\"/>",
-          "<uses-permission android:name=\"android.permission.READ_LOGS\"/>",
-          "<uses-permission android:name=\"android.permission.READ_PHONE_STATE\"/>",
-          "<uses-permission android:name=\"android.permission.READ_SMS\"/>",
-          "<uses-permission android:name=\"android.permission.RECEIVE_BOOT_COMPLETED\"/>",
-          "<uses-permission android:name=\"android.permission.RECORD_AUDIO\"/>",
-          "<uses-permission android:name=\"android.permission.SEND_SMS\"/>",
-          "<uses-permission android:name=\"android.permission.SYSTEM_ALERT_WINDOW\"/>",
-          "<uses-permission android:name=\"android.permission.WAKE_LOCK\"/>",
-          "<uses-permission android:name=\"android.permission.WRITE_CONTACTS\"/>",
-          "<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\"/>",
-          "<uses-permission android:name=\"android.permission.WRITE_SETTINGS\"/>",
-          "<uses-permission android:name=\"android.permission.WRITE_SMS\"/>",
-          "<uses-permission android:name=\"android.permission.RECEIVE_USER_PRESENT\"/>"
+          "<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\"/>"
         ],
         "minSdkVersion": 21,
         "schemes": "tutor"
@@ -76,8 +55,7 @@
         "privacyDescription": {
           "NSPhotoLibraryUsageDescription": "需要同意访问您的相册选取图片才能完善该条目",
           "NSPhotoLibraryAddUsageDescription": "需要同意访问您的相册才能保存该图片",
-          "NSCameraUsageDescription": "需要同意访问您的摄像头拍摄照片才能完善该条目",
-          "NSUserTrackingUsageDescription": "开启追踪并不会获取您在其它站点的隐私信息,该行为仅用于标识设备,保障服务安全和提升浏览体验"
+          "NSCameraUsageDescription": "需要同意访问您的摄像头拍摄照片才能完善该条目"
         },
         "urltypes": "tutor",
         "capabilities": {
@@ -85,7 +63,7 @@
             "com.apple.developer.associated-domains": []
           }
         },
-        "idfa": true
+        "idfa": false
       },
       "sdkConfigs": {
         "speech": {},
