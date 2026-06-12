@@ -92,6 +92,7 @@
   import {
     getLocalContacts,
     getLocalItem,
+    isLocalDemoTarget,
     getTargetType,
     getUiType,
     isNumericId,
@@ -133,14 +134,13 @@
 
   async function load() {
     state.loading = true;
-    const localRecords = getLocalContacts().map(normalizeRecord);
+    const localRecords = getLocalContacts().filter(isLocalDemoTarget).map(normalizeRecord).filter(Boolean);
     const result = await TutorInteractionApi.getContactRecordList();
     if (result?.code === 0) {
       const remote = await Promise.all(
         (result.data || []).map((item, index) => hydrateRecord(normalizeRecord(item, index))),
       );
-      const map = new Map([...remote, ...localRecords].map((item) => [item.key, item]));
-      state.records = [...map.values()];
+      state.records = [...remote, ...localRecords].filter(Boolean);
     } else {
       state.records = localRecords;
     }
@@ -148,6 +148,7 @@
   }
 
   async function hydrateRecord(record) {
+    if (!record) return null;
     if (!isNumericId(record.targetId)) {
       return record;
     }

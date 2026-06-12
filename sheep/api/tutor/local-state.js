@@ -30,6 +30,14 @@ export function targetKey(targetType, targetId) {
   return `${getTargetType(targetType)}:${targetId}`;
 }
 
+export function isLocalDemoTarget(item = {}) {
+  const keyTargetId = typeof item.key === 'string' && item.key.includes(':')
+    ? item.key.split(':').pop()
+    : undefined;
+  const targetId = item.targetId || item.resumeId || item.demandId || keyTargetId || item.id;
+  return !isNumericId(targetId);
+}
+
 function readList(key) {
   const value = uni.getStorageSync(key);
   return Array.isArray(value) ? value : [];

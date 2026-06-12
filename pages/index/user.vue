@@ -120,7 +120,7 @@
   import TutorCertificationApi from '@/sheep/api/tutor/certification';
   import TutorInteractionApi from '@/sheep/api/tutor/interaction';
   import TutorPostApi from '@/sheep/api/tutor/post';
-  import { getLocalContacts, targetKey } from '@/sheep/api/tutor/local-state';
+  import { getLocalContacts, isLocalDemoTarget, targetKey } from '@/sheep/api/tutor/local-state';
   import { TUTOR_AUDIT_STATUS, TUTOR_ROLE } from '@/sheep/api/tutor/utils';
 
   const userStore = sheep.$store('user');
@@ -305,11 +305,12 @@
     if (!isLogin.value) {
       return;
     }
-    const localCount = getLocalContacts().length;
+    const localContacts = getLocalContacts().filter(isLocalDemoTarget);
+    const localCount = localContacts.length;
     const result = await TutorInteractionApi.getContactRecordList();
     if (result?.code === 0) {
       const keys = new Set(
-        [...(result.data || []), ...getLocalContacts()].map((item) =>
+        [...(result.data || []), ...localContacts].map((item) =>
           targetKey(item.targetType || item.type, item.targetId || item.id),
         ),
       );

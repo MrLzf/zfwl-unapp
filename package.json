@@ -5,6 +5,12 @@
   "version": "2026.03",
   "description": "家教信息服务应用，一套代码，同时发行到 iOS、Android、H5、微信小程序多个平台",
   "scripts": {
+    "test": "node tests/run-tutor-tests.cjs",
+    "dev": "npm run dev:h5",
+    "dev:h5": "cross-env UNI_INPUT_DIR=. uni",
+    "build:h5": "cross-env UNI_INPUT_DIR=. uni build",
+    "dev:mp-weixin": "cross-env UNI_INPUT_DIR=. uni -p mp-weixin",
+    "build:mp-weixin": "cross-env UNI_INPUT_DIR=. uni build -p mp-weixin",
     "prettier": "prettier --write  \"{pages,sheep}/**/*.{js,json,tsx,css,less,scss,vue,html,md}\""
   },
   "repository": "https://github.com/sheepjs/shop.git",
@@ -88,16 +94,25 @@
     }
   },
   "dependencies": {
+    "@dcloudio/uni-app": "3.0.0-alpha-5010220260604001",
+    "@dcloudio/uni-h5": "3.0.0-alpha-5010220260604001",
+    "@dcloudio/uni-mp-weixin": "3.0.0-alpha-5010220260604001",
     "dayjs": "^1.11.7",
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
     "luch-request": "^3.0.8",
-    "pinia": "^2.0.33",
+    "pinia": "2.1.7",
     "pinia-plugin-persist-uni": "^1.2.0",
+    "vue": "3.4.21",
     "weixin-js-sdk": "^1.6.0"
   },
   "devDependencies": {
+    "@dcloudio/types": "3.4.31",
+    "@dcloudio/vite-plugin-uni": "3.0.0-alpha-5010220260604001",
+    "cross-env": "^7.0.3",
     "prettier": "^2.8.7",
+    "sass": "^1.77.8",
+    "vite": "5.2.8",
     "vconsole": "^3.15.0"
   }
 }

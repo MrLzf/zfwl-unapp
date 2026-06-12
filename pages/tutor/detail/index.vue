@@ -343,6 +343,7 @@
       userStore.tutorProfile?.userId &&
       String(detail.value.userId) === String(userStore.tutorProfile?.userId),
   );
+  const canUseLocalFallback = computed(() => !isNumericId(state.id));
   const priceText = computed(() =>
     isTutor.value
       ? formatPriceRange(
@@ -353,7 +354,7 @@
       : formatPriceRange(detail.value.budgetMin, detail.value.budgetMax, detail.value.budget),
   );
   const pointBalance = computed(() => {
-    if (state.usingLocal || !isNumericId(state.id)) {
+    if (state.usingLocal || canUseLocalFallback.value) {
       return getLocalPoints();
     }
     return userStore.userInfo?.point ?? getLocalPoints();
@@ -387,7 +388,9 @@
   }
 
   async function loadFavorite() {
-    state.isFavorited = isLocalFavorite(state.targetType, state.id);
+    state.isFavorited = canUseLocalFallback.value
+      ? isLocalFavorite(state.targetType, state.id)
+      : false;
     if (!isLogin.value || state.usingLocal || !isNumericId(state.id)) return;
     const result = await TutorInteractionApi.getFavoriteList();
     if (result?.code === 0) {
@@ -418,7 +421,7 @@
           state.safetyTip = result.data?.safetyTip || '';
         }
       }
-      if (!loaded) {
+      if (!loaded && canUseLocalFallback.value) {
         loaded = getLocalItem(state.targetType, state.id);
         if (!loaded) {
           state.errorMsg = '内容不存在或已下架';
@@ -429,13 +432,19 @@
         state.contact = null;
         state.safetyTip = '请核验对方身份，线下见面选择公共场所，未确认前不要提前转账。';
       }
+      if (!loaded) {
+        state.errorMsg = '内容不存在或已下架';
+        return;
+      }
       state.detail = loaded;
       state.targetType = loaded.targetType || state.targetType;
       state.type = loaded.type || state.type;
-      recordLocalHistory(loaded);
+      if (canUseLocalFallback.value) {
+        recordLocalHistory(loaded);
+      }
       await loadFavorite();
     } catch (error) {
-      const loaded = getLocalItem(state.targetType, state.id);
+      const loaded = canUseLocalFallback.value ? getLocalItem(state.targetType, state.id) : null;
       if (loaded) {
         state.usingLocal = true;
         state.detail = loaded;
@@ -473,10 +482,12 @@
         return;
       }
     }
-    if (next) {
-      addLocalFavorite(state.detail);
-    } else {
-      removeLocalFavorite(state.targetType, state.id);
+    if (canUseLocalFallback.value) {
+      if (next) {
+        addLocalFavorite(state.detail);
+      } else {
+        removeLocalFavorite(state.targetType, state.id);
+      }
     }
     uni.showToast({ title: next ? '已收藏' : '已取消收藏', icon: 'none' });
   }
@@ -501,8 +512,11 @@
           targetType: state.targetType,
           targetId: Number(state.id),
         });
-      } else {
+      } else if (canUseLocalFallback.value) {
         result = viewLocalContact(state.detail);
+      } else {
+        state.contactError = '暂时无法查看联系方式';
+        return;
       }
       if (result?.code === 0) {
         state.contact = result.data;
@@ -511,7 +525,7 @@
         state.showContactModal = true;
         await userStore.updateUserData?.();
         uni.showToast({
-          title: result.data?.reused ? '复看免费' : '已扣除 10 积分',
+          title: formatPointCostToast(result.data),
           icon: 'none',
         });
         return;
@@ -520,6 +534,13 @@
     } finally {
       state.contactLoading = false;
     }
+  }
+
+  function formatPointCostToast(contact) {
+    if (contact?.reused || Number(contact?.pointCost || 0) <= 0) {
+      return '复看免费';
+    }
+    return `已扣除 ${contact.pointCost} 积分`;
   }
 
   function goPoints() {
@@ -567,7 +588,7 @@
 
   async function findCurrentMatch() {
     const key = targetKey(state.targetType, state.id);
-    if (state.usingLocal || !isNumericId(state.id)) {
+    if (state.usingLocal || canUseLocalFallback.value) {
       return getLocalMatches().find((match) => match.key === key);
     }
     const result = await TutorInteractionApi.getMatchList();
@@ -602,8 +623,11 @@
         return;
       }
       state.currentMatch = result.data;
-    } else {
+    } else if (canUseLocalFallback.value) {
       state.currentMatch = confirmLocalMatch(match.id || match.key);
+    } else {
+      uni.showToast({ title: '确认失败', icon: 'none' });
+      return;
     }
     if (isReviewableMatch(state.currentMatch)) {
       uni.showToast({ title: '匹配已确认', icon: 'none' });
@@ -643,6 +667,8 @@
       content: reviewForm.content,
       anonymousDisplay: false,
       targetTitle: state.detail.title || state.detail.name,
+      targetType: state.targetType,
+      targetId: state.id,
     };
     if (!state.usingLocal && isNumericId(state.id)) {
       const result = await TutorInteractionApi.createReview(payload);
@@ -650,8 +676,11 @@
         uni.showToast({ title: result?.msg || '评价失败', icon: 'none' });
         return;
       }
-    } else {
+    } else if (canUseLocalFallback.value) {
       addLocalReview(payload);
+    } else {
+      uni.showToast({ title: '评价失败', icon: 'none' });
+      return;
     }
     state.showReviewModal = false;
     reviewForm.rating = 5;

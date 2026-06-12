@@ -10,6 +10,12 @@ export default (command, mode) => {
   const env = loadEnv(mode, __dirname, 'TUTOR_');
   return {
     envPrefix: 'TUTOR_',
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './'),
+        'sheep': path.resolve(__dirname, './sheep'),
+      },
+    },
     plugins: [
       uni(),
       // viteCompression({

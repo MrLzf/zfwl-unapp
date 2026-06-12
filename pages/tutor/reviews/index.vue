@@ -137,6 +137,7 @@
     getLocalItem,
     getLocalMatches,
     getLocalReviews,
+    isLocalDemoTarget,
     getTargetType,
     getUiType,
     isNumericId,
@@ -206,12 +207,14 @@
 
   async function load() {
     state.loading = true;
-    const localMatches = getLocalMatches().map(normalizeMatch);
+    const localMatches = getLocalMatches().filter(isLocalDemoTarget).map(normalizeMatch).filter(Boolean);
     const matchResult = await TutorInteractionApi.getMatchList();
     state.matches =
-      matchResult?.code === 0 ? (matchResult.data || []).map(normalizeMatch) : localMatches;
+      matchResult?.code === 0
+        ? [...(matchResult.data || []).map(normalizeMatch).filter(Boolean), ...localMatches]
+        : localMatches;
 
-    const localReviews = getLocalReviews().map(normalizeReview);
+    const localReviews = getLocalReviews().filter(isLocalDemoTarget).map(normalizeReview);
     const reviewResult = await TutorInteractionApi.getMyReviewList();
     state.reviews =
       reviewResult?.code === 0
@@ -304,6 +307,8 @@
       content: form.content,
       anonymousDisplay: false,
       targetTitle: state.currentMatch.title || state.currentMatch.name,
+      targetType: state.currentMatch.targetType,
+      targetId: state.currentMatch.targetId,
     };
     if (!state.currentMatch.local && isNumericId(state.currentMatch.id)) {
       const result = await TutorInteractionApi.createReview(payload);

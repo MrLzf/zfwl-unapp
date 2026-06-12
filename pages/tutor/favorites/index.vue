@@ -52,6 +52,7 @@
   import {
     getLocalFavorites,
     getLocalItem,
+    isLocalDemoTarget,
     getTargetType,
     getUiType,
     isNumericId,
@@ -120,12 +121,11 @@
 
   async function load() {
     state.loading = true;
-    const localItems = getLocalFavorites().map(normalizeFavorite);
+    const localItems = getLocalFavorites().filter(isLocalDemoTarget).map(normalizeFavorite).filter(Boolean);
     const result = await TutorInteractionApi.getFavoriteList();
     if (result?.code === 0) {
-      const remote = (result.data || []).map(normalizeFavorite);
-      const map = new Map([...localItems, ...remote].map((item) => [item.key, item]));
-      state.items = [...map.values()];
+      const remote = (result.data || []).map(normalizeFavorite).filter(Boolean);
+      state.items = [...remote, ...localItems];
     } else {
       state.items = localItems;
     }

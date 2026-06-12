@@ -59,6 +59,7 @@
     clearLocalHistory,
     getLocalHistory,
     getLocalItem,
+    isLocalDemoTarget,
     getTargetType,
     getUiType,
     isNumericId,
@@ -125,10 +126,10 @@
 
   async function load() {
     state.loading = true;
-    const localItems = getLocalHistory().map(normalizeHistory);
+    const localItems = getLocalHistory().filter(isLocalDemoTarget).map(normalizeHistory).filter(Boolean);
     const result = await TutorInteractionApi.getBrowseHistoryList();
     if (result?.code === 0) {
-      const remote = (result.data || []).map(normalizeHistory);
+      const remote = (result.data || []).map(normalizeHistory).filter(Boolean);
       state.items = remote;
     } else {
       state.items = localItems;
