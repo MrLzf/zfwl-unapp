@@ -23,7 +23,7 @@ The workspace contains three independent repositories:
 - `zlwl-vue`: Vue 3 admin frontend with existing tutor APIs and views.
 - `zfwl-unapp`: uni-app mobile frontend with tutor pages, tests, and prior local-state cleanup work.
 
-The mobile and admin frontends currently have environment values that can point at online services. The backend local profile also contains online MySQL and Redis addresses. This makes local debugging data-dependent and risks touching shared online state.
+The mobile and admin frontends currently have environment values that can point directly at online services. For this pass, the backend local profile intentionally uses the online MySQL and Redis addresses so local backend debugging can run against the same data as the deployed environment.
 
 ## Recommended Approach
 
@@ -33,7 +33,7 @@ Use a local-first P0 loop:
 - Run admin frontend locally on `80` or the next available port.
 - Run mobile H5 locally on `3000`.
 - Point mobile and admin development environments to the local backend.
-- Make backend local configuration use controllable local infrastructure where available, or document any external dependency that cannot be replaced during this pass.
+- Keep backend local configuration connected to the online MySQL and Redis services, per the current debugging requirement.
 
 This approach gives the fastest feedback on real API contracts, auth state, tenant headers, review status transitions, point deduction behavior, and mobile UX.
 
@@ -47,7 +47,7 @@ Use the `local` Spring profile as the single backend target for this pass. The b
 - `/admin-api` for admin.
 - Swagger or OpenAPI endpoints for API inspection if startup succeeds.
 
-The preferred dependency target is local MySQL and local Redis. If those services are unavailable, the implementation should avoid silently using online data. The result must clearly document which dependency target was used.
+The dependency target is the online MySQL and online Redis used by the current environment. The final handoff must clearly document that local backend runs against online data.
 
 ### Admin Frontend
 
@@ -133,7 +133,7 @@ Known pre-existing risk:
 
 ## Acceptance Criteria
 
-- The mobile P0 loop can be executed against a controlled local backend target, or any remaining external dependency is explicitly documented.
+- The mobile P0 loop can be executed through the local backend target, with backend data dependencies explicitly documented as online MySQL and Redis.
 - Mobile H5 pages involved in the loop render cleanly at common mobile viewport sizes.
 - Admin support pages can complete the required review or correction steps.
 - Environment files no longer default local development to the online API for this P0 workflow.

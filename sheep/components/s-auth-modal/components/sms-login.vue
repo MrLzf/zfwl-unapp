@@ -27,14 +27,6 @@
 
     <view class="form-list">
       <view class="field">
-        <view class="field-label">姓名</view>
-        <view class="input-box">
-          <text class="cicon-person-o"></text>
-          <input v-model="state.model.name" placeholder="请输入您的姓名" maxlength="12" />
-        </view>
-      </view>
-
-      <view class="field">
         <view class="field-label">手机号</view>
         <view class="input-box">
           <text class="cicon-phone"></text>
@@ -82,12 +74,10 @@
   import test from '@/sheep/helper/test';
   import { closeAuthModal, getSmsCode, getSmsTimer } from '@/sheep/hooks/useModal';
   import AuthUtil from '@/sheep/api/member/auth';
-  import UserApi from '@/sheep/api/member/user';
   import TutorProfileApi from '@/sheep/api/tutor/profile';
   import TutorCityApi from '@/sheep/api/tutor/city';
 
   const emits = defineEmits(['onConfirm', 'roleChange']);
-  const DEFAULT_AVATAR = '/static/data-empty.png';
 
   const props = defineProps({
     agreeStatus: {
@@ -113,7 +103,6 @@
     submitting: false,
     model: {
       role: 'parent',
-      name: '',
       mobile: '',
       code: '',
     },
@@ -138,10 +127,6 @@
   function validateBase({ includeCode = false } = {}) {
     if (!state.model.role) {
       sheep.$helper.toast('请选择身份');
-      return false;
-    }
-    if (!state.model.name.trim()) {
-      sheep.$helper.toast('请输入姓名');
       return false;
     }
     if (!test.mobile(state.model.mobile)) {
@@ -206,24 +191,6 @@
     }
   }
 
-  async function syncUserInfo() {
-    const userStore = sheep.$store('user');
-    const userInfo = userStore.userInfo || {};
-    const nickname = state.model.name.trim();
-    const payload = {};
-    if (nickname) {
-      payload.nickname = nickname;
-    }
-    if (!userInfo.avatar) {
-      payload.avatar = DEFAULT_AVATAR;
-    }
-    if (!Object.keys(payload).length) {
-      return;
-    }
-    await UserApi.updateUserSilent(payload);
-    await userStore.getInfo();
-  }
-
   async function smsLoginSubmit() {
     if (!checkAgreement() || !validateBase({ includeCode: true })) {
       return;
@@ -248,7 +215,6 @@
       if (loginRes.data?.tutorProfile) {
         sheep.$store('user').setTutorProfile(loginRes.data.tutorProfile);
       }
-      await syncUserInfo();
       if (!loginRes.data?.tutorProfile) {
         await initTutorProfile();
       }

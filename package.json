@@ -6,6 +6,9 @@
   "description": "家教信息服务应用，一套代码，同时发行到 iOS、Android、H5、微信小程序多个平台",
   "scripts": {
     "test": "node tests/run-tutor-tests.cjs",
+    "seed:p0": "node scripts/seed-tutor-p0.cjs",
+    "smoke:p0": "node scripts/smoke-tutor-p0.cjs",
+    "verify:p0": "node scripts/smoke-tutor-p0.cjs && node scripts/seed-tutor-p0.cjs && node scripts/smoke-tutor-p0.cjs",
     "dev": "npm run dev:h5",
     "dev:h5": "cross-env UNI_INPUT_DIR=. uni",
     "build:h5": "cross-env UNI_INPUT_DIR=. uni build",

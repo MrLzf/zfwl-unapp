@@ -387,6 +387,12 @@
     return normalizeDemand(payload.demand || payload, 0);
   }
 
+  function syncNavigationTitle() {
+    uni.setNavigationBarTitle({
+      title: isTutor.value ? '老师详情' : '需求详情',
+    });
+  }
+
   async function loadFavorite() {
     state.isFavorited = canUseLocalFallback.value
       ? isLocalFavorite(state.targetType, state.id)
@@ -439,6 +445,7 @@
       state.detail = loaded;
       state.targetType = loaded.targetType || state.targetType;
       state.type = loaded.type || state.type;
+      syncNavigationTitle();
       if (canUseLocalFallback.value) {
         recordLocalHistory(loaded);
       }
@@ -693,6 +700,7 @@
     state.type = options.type || 'req';
     state.targetType = getTargetType(options.targetType || options.type || 'demand');
     state.id = options.id || 'req-r3';
+    syncNavigationTitle();
     loadDetail();
   });
 </script>

@@ -18,15 +18,11 @@ test('wechat mobile login forwards tutor onboarding fields', () => {
 test('auth modal initializes tutor profile after wechat login', () => {
   const source = read('sheep/components/s-auth-modal/s-auth-modal.vue');
   assert.match(source, /const tutorRole = computed\(\(\) => state\.tutorRole\)/);
-  assert.match(source, /const DEFAULT_AVATAR = '\/static\/data-empty\.png'/);
   assert.match(
     source,
     /TutorProfileApi\.initProfile\(\{\s*role: tutorRole\.value,\s*cityCode: city\.code,/s,
   );
-  assert.match(
-    source,
-    /if \(!userInfo\?\.avatar\) \{[\s\S]*UserApi\.updateUserSilent\(\{ avatar: DEFAULT_AVATAR \}\)/,
-  );
+  assert.doesNotMatch(source, /UserApi\.updateUserSilent\(\{\s*avatar: DEFAULT_AVATAR\s*\}\)/);
   assert.match(source, /await completeWechatLogin\(city\)/);
 });
 
@@ -40,12 +36,14 @@ test('wechat mobile login requires agreement and forwards tutor onboarding field
   );
 });
 
-test('sms login sets a default avatar when the account has none', () => {
+test('sms login does not require profile name or avatar update', () => {
   const source = read('sheep/components/s-auth-modal/components/sms-login.vue');
-  assert.match(source, /const DEFAULT_AVATAR = '\/static\/data-empty\.png'/);
-  assert.match(source, /if \(!userInfo\.avatar\) \{\s*payload\.avatar = DEFAULT_AVATAR;\s*\}/);
-  assert.match(source, /await UserApi\.updateUserSilent\(payload\)/);
-  assert.match(source, /await syncUserInfo\(\)/);
+  assert.doesNotMatch(source, /placeholder="请输入您的姓名"/);
+  assert.doesNotMatch(source, /请输入姓名/);
+  assert.doesNotMatch(source, /state\.model\.name/);
+  assert.doesNotMatch(source, /payload\.avatar = DEFAULT_AVATAR/);
+  assert.doesNotMatch(source, /UserApi\.updateUserSilent/);
+  assert.doesNotMatch(source, /await syncUserInfo\(\)/);
 });
 
 test('wechat authorization form falls back to the default avatar', () => {

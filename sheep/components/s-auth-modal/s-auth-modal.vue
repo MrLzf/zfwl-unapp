@@ -149,7 +149,6 @@
   import changePassword from './components/change-password.vue';
   import mpAuthorization from './components/mp-authorization.vue';
   import { closeAuthModal, showAuthModal } from '@/sheep/hooks/useModal';
-  import UserApi from '@/sheep/api/member/user';
   import TutorProfileApi from '@/sheep/api/tutor/profile';
   import TutorCityApi from '@/sheep/api/tutor/city';
 
@@ -164,7 +163,6 @@
 
   const currentProtocol = ref(false);
   const tutorRole = computed(() => state.tutorRole);
-  const DEFAULT_AVATAR = '/static/data-empty.png';
 
   // 同意协议
   function onAgree() {
@@ -245,11 +243,6 @@
     const userInfo = (await userStore.getInfo()) || {};
     if (!(await ensureTutorProfile(city))) {
       return;
-    }
-    if (!userInfo?.avatar) {
-      await UserApi.updateUserSilent({ avatar: DEFAULT_AVATAR });
-      userInfo.avatar = DEFAULT_AVATAR;
-      userStore.userInfo = { ...userStore.userInfo, avatar: DEFAULT_AVATAR };
     }
     closeAuthModal();
     if (!userInfo?.nickname) {
