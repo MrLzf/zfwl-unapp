@@ -297,7 +297,7 @@
 </script>
 
 <style lang="scss" scoped>
-  @import './index.scss';
+  @use './index';
 
   .shake {
     animation: shake 0.05s linear 4 alternate;

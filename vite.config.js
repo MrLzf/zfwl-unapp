@@ -16,6 +16,13 @@ export default (command, mode) => {
         'sheep': path.resolve(__dirname, './sheep'),
       },
     },
+    css: {
+      preprocessorOptions: {
+        scss: {
+          silenceDeprecations: ['legacy-js-api'],
+        },
+      },
+    },
     plugins: [
       uni(),
       // viteCompression({
